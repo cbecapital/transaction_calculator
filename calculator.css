@@ -25,7 +25,7 @@
 }
 
 h2, label {
-  color: #180f3f;
+  color: #ffffff;
 }
 
     body { 
@@ -43,7 +43,7 @@ h2, label {
  
     h2 { 
       margin-bottom: 20px; 
-      color: #080808; 
+      color: #0e0d0d; 
     } 
  
     label { 
@@ -67,7 +67,7 @@ h2, label {
       width: 100%; 
       padding: 12px; 
       background: #3498db; 
-      color: rgb(138, 23, 23); 
+      color: rgb(255, 255, 255); 
       border: none; 
       border-radius: 8px; 
       font-size: 16px; 
