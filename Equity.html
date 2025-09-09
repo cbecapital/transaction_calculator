@@ -27,21 +27,20 @@
   </div>
 
   <script>
-    // Hardcoded equity rate (2.11%)
+  
     const RATE = 0.0211;
 
-    // Simple formatting (adds commas while typing)
+    
     function setupFormatter(id) {
       const el = document.getElementById(id);
       el.addEventListener("input", (e) => {
-        let v = e.target.value.replace(/,/g, "");          // remove commas
-        // allow only digits and one dot
+        let v = e.target.value.replace(/,/g, "");        
         v = v.replace(/[^\d.]/g, "");
         const parts = v.split(".");
         if (parts.length > 2) v = parts[0] + "." + parts.slice(1).join(""); // keep first dot
         if (v === "") { e.target.value = ""; return; }
         if (!isNaN(v)) {
-          // keep as number formatted with commas
+    as
           e.target.value = parseFloat(v).toLocaleString("en-US");
         } else {
           e.target.value = "";
@@ -53,7 +52,7 @@
     setupFormatter("marketPrice");
 
     function calculateFee() {
-      // read raw values (remove commas)
+      
       const rawQty = document.getElementById("quantity").value.replace(/,/g, "");
       const rawPrice = document.getElementById("marketPrice").value.replace(/,/g, "");
 
@@ -69,27 +68,27 @@
         return;
       }
 
-      // Your requested formula: fee = quantity * 0.0211 * marketPrice
-      const tradeValue = quantity * marketPrice;      // quantity × market price
-      const fee = quantity * RATE * marketPrice;      // quantity × 0.0211 × marketPrice
-      // (same as tradeValue * RATE)
+      const tradeValue = quantity * marketPrice;      
+      const fee = quantity * RATE * marketPrice;      
+      
       const total = tradeValue + fee;
 
       const resultDiv = document.getElementById("result");
       resultDiv.style.display = "block";
       resultDiv.innerHTML =
+       "Transaction Value" +
         "CBE CAPITAL Fee 1.6%<br>" +
         "ECMA Fee: 0.15%<br>" +
         "ESX Fee: 0.36%<br>" +
         "CSD Fee: 0.00%<br>" +
         "📊 Fee Rate (equity): " + (RATE * 100).toFixed(2) + "%<br><br>" +
 
-        // show clear breakdown
         "Quantity: " + quantity.toLocaleString("en-US") + "<br>" +
         "Market Price (per security): " + marketPrice.toLocaleString("en-US") + " ETB<br>" +
         "Trade Value (quantity × price): <strong>" + tradeValue.toLocaleString("en-US") + " ETB</strong><br>" +
-        "💰 Transaction Fee (quantity × 2.11% × price): <strong>" + fee.toLocaleString("en-US") + " ETB</strong><br>" +
-        "📦 Total to send (trade value + fee): <strong>" + total.toLocaleString("en-US") + " ETB</strong>";
+        "💰 Transaction Fee (quantity × 2.11% × price): <strong>" + fee.toLocaleString("en-US") + " ETB</strong><br><br>" +
+
+        "📦 Total what you have to send is  (trade value + fee): <strong>" + total.toLocaleString("en-US") + " ETB</strong>";
     }
   </script>
 </body>
