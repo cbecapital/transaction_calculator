@@ -1,0 +1,71 @@
+<html lang="en"> 
+<head> 
+  <meta charset="UTF-8"> 
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+  <title>Transaction Fee Calculator</title> 
+  <link rel="stylesheet" href="calculator.css">
+</head> 
+<body> 
+    <video autoplay muted loop id="bg-video">
+  <source src="CBE Capital Logo Reveal.mp4" type="video/mp4">
+</video>
+  <div class="container"> 
+    <h2>Transaction Fee Calculator</h2> 
+ 
+    <label for="security">Choose Security:</label> 
+    <select id="security"> 
+        <option value="0.0211">Equity Main & Growth Market</option>  
+      <option value="0.0265">OTC / Unlisted Market</option> 
+      <option value="0.0251">OTC / Mutulal Funds & ETFs</option> 
+      <option value="0.00315">Corporate Bond</option> 
+      <option value="0.00126">GoE Treasury Bills</option> 
+      <option value="0.00126">Commercial Paper</option> 
+      <option value="0.00126">Sub-National Bonds</option> 
+      <option value="0.00126">Sukuks</option> 
+      <option value="0.00105">Interbank Money Market / Repo</option> 
+    </select> 
+ 
+    <label for="amount">Enter Amount (ETB):</label> 
+    <input type="text" id="amount" placeholder="Enter amount..."> 
+ 
+    <button onclick="calculateFee()">Calculate</button> 
+ 
+    <div id="result"></div> 
+  </div> 
+ 
+  <script> 
+    const amountInput = document.getElementById("amount"); 
+ 
+    // Format with commas as user types 
+    amountInput.addEventListener("input", (e) => { 
+      let value = e.target.value.replace(/,/g, ""); 
+      if (!isNaN(value) && value !== "") { 
+        e.target.value = parseFloat(value).toLocaleString("en-US"); 
+      } else { 
+        e.target.value = ""; 
+      } 
+    }); 
+ 
+    function calculateFee() { 
+      let rate = parseFloat(document.getElementById("security").value); 
+      let rawAmount = document.getElementById("amount").value.replace(/,/g, ""); 
+      let amount = parseFloat(rawAmount); 
+ 
+      if (isNaN(amount) || amount <= 0) { 
+        alert("Please enter a valid amount."); 
+        return; 
+      } 
+ 
+      let fee = amount * rate; 
+      let total = amount + fee; 
+ 
+      let resultDiv = document.getElementById("result"); 
+      resultDiv.style.display = "block"; 
+      resultDiv.innerHTML = 
+        "📊 Total Fee Rate: " + (rate*100).toFixed(3) + "%<br>" + 
+        "💰 Transaction Fee: " + fee.toLocaleString("en-US") + " ETB<br>" + 
+        "📦 So what you have to send in total is: <strong>" + total.toLocaleString("en-US") + " ETB</strong>"; 
+    } 
+  </script> 
+</body> 
+</html>
