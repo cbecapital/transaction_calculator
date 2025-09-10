@@ -1,1 +1,102 @@
-treasury.html
+<html lang="en"> 
+<head> 
+  <meta charset="UTF-8"> 
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+  <title>Transaction Fee Calculator</title> 
+  <link rel="stylesheet" href="index.css">
+</head> 
+<body> 
+<video autoplay muted loop id="bg-video">
+  <source src="cbe-logo-2.mp4" type="video/mp4">
+</video>
+
+  <div class="container"> 
+            <button class="btn" onclick="location.href='index.html'">Home </button>
+        <button class="btn" onclick="location.href='index.html'">Buy</button>
+
+        <button class="btn" onclick="location.href='index.html'">Sell</button>
+
+   <h3>Transaction Fee Calculator For treasury </h3>
+ 
+
+    <label for="quantity">Enter Quantity (number of securities):</label>
+    <input type="text" id="quantity" placeholder="e.g. 100">
+
+    <label for="marketPrice">Enter Price of treasury bill (per security):</label>
+    <input type="text" id="marketPrice" placeholder="e.g. 120.50">
+    
+    <label for="marketPrice"> Muaturity date :</label>
+    <input type="text" id="marketPrice" placeholder="22/05/2025">
+
+    <button onclick="calculateFee()">Calculate</button>
+
+    <div id="result"></div>
+  </div>
+
+  <script>
+  
+    const RATE = 0.0211;
+
+    
+    function setupFormatter(id) {
+      const el = document.getElementById(id);
+      el.addEventListener("input", (e) => {
+        let v = e.target.value.replace(/,/g, "");        
+        v = v.replace(/[^\d.]/g, "");
+        const parts = v.split(".");
+        if (parts.length > 2) v = parts[0] + "." + parts.slice(1).join(""); // keep first dot
+        if (v === "") { e.target.value = ""; return; }
+        if (!isNaN(v)) {
+    as
+          e.target.value = parseFloat(v).toLocaleString("en-US");
+        } else {
+          e.target.value = "";
+        }
+      });
+    }
+
+    setupFormatter("quantity");
+    setupFormatter("marketPrice");
+
+    function calculateFee() {
+      
+      const rawQty = document.getElementById("quantity").value.replace(/,/g, "");
+      const rawPrice = document.getElementById("marketPrice").value.replace(/,/g, "");
+
+      const quantity = parseFloat(rawQty);
+      const marketPrice = parseFloat(rawPrice);
+
+      if (isNaN(quantity) || quantity <= 0) {
+        alert("Please enter a valid quantity (greater than 0).");
+        return;
+      }
+      if (isNaN(marketPrice) || marketPrice <= 0) {
+        alert("Please enter a valid market/limit price (greater than 0).");
+        return;
+      }
+
+      const tradeValue = quantity * marketPrice;      
+      const fee = quantity * RATE * marketPrice;      
+      
+      const total = tradeValue + fee;
+
+      const resultDiv = document.getElementById("result");
+      resultDiv.style.display = "block";
+      resultDiv.innerHTML =
+       "Transaction Value" +
+        "CBE CAPITAL Fee 1.6%<br>" +
+        "ECMA Fee: 0.15%<br>" +
+        "ESX Fee: 0.36%<br>" +
+        "CSD Fee: 0.00%<br>" +
+        "📊 Fee Rate (equity): " + (RATE * 100).toFixed(2) + "%<br><br>" +
+
+        "Quantity: " + quantity.toLocaleString("en-US") + "<br>" +
+        "Market Price (per security): " + marketPrice.toLocaleString("en-US") + " ETB<br>" +
+        "Trade Value (quantity × price): <strong>" + tradeValue.toLocaleString("en-US") + " ETB</strong><br>" +
+        "💰 Transaction Fee (quantity × 2.11% × price): <strong>" + fee.toLocaleString("en-US") + " ETB</strong><br><br>" +
+
+        "📦 Total what you have to send is  (trade value + fee): <strong>" + total.toLocaleString("en-US") + " ETB</strong>";
+    }
+  </script>
+</body>
+</html>

@@ -3,94 +3,128 @@
   <meta charset="UTF-8"> 
   <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
   <title>Transaction Fee Calculator</title> 
-  <link rel="stylesheet" href="index.css">
+  <link rel="stylesheet" href="equity.css">
 </head> 
-<body> 
+<body>     
+  <button class="home-btn" onclick="location.href='index.html'">Home</button>
+
 <video autoplay muted loop id="bg-video">
   <source src="cbe-logo-2.mp4" type="video/mp4">
 </video>
 
-  <div class="container"> 
-        <button class="btn" onclick="location.href='index.html'">Home</button>
 
-   <h3>Transaction Fee Calculator For Equity Main & Growth Market</h3>
- 
+<div class="container"> 
+  <h3>Transaction Fee Calculator For Equity Main & Growth Market</h3>
 
-    <label for="quantity">Enter Quantity (number of securities):</label>
-    <input type="text" id="quantity" placeholder="e.g. 100">
+  <div class="button-row">
+    <button class="btn" onclick="showSection('buySection')">Buy</button>
+    <button class="btn" onclick="showSection('sellSection')">Sell</button>
+  </div>
 
-    <label for="marketPrice">Enter Market / Limit Price (per security):</label>
-    <input type="text" id="marketPrice" placeholder="e.g. 120.50">
 
-    <button onclick="calculateFee()">Calculate</button>
 
-    <div id="result"></div>
+  <!-- BUY SECTION -->
+  <div id="buySection" style="display:none; margin-top:20px;">
+    <h4>Buy Transaction</h4>
+    <label for="buyQuantity">Enter Quantity (number of securities):</label>
+    <input type="text" id="buyQuantity" placeholder="e.g. 100">
+
+    <label for="buyMarketPrice">Enter Market / Limit Price (per security):</label>
+    <input type="text" id="buyMarketPrice" placeholder="e.g. 120.50">
+
+    <button onclick="calculateFee('buy')">Calculate Buy</button>
+    <div id="buyResult"></div>
+  </div>
+
+  <!-- SELL SECTION -->
+  <div id="sellSection" style="display:none; margin-top:20px;">
+    <h4>Sell Transaction</h4>
+    <label for="sellQuantity">Enter Quantity (number of securities):</label>
+    <input type="text" id="sellQuantity" placeholder="e.g. 100">
+
+    <label for="sellMarketPrice">Enter Market / Limit Price (per security):</label>
+    <input type="text" id="sellMarketPrice" placeholder="e.g. 120.50">
+
+    <button onclick="calculateFee('sell')">Calculate Sell</button>
+    <div id="sellResult"></div>
   </div>
 
   <script>
-  
-    const RATE = 0.0211;
-
-    
-    function setupFormatter(id) {
-      const el = document.getElementById(id);
-      el.addEventListener("input", (e) => {
-        let v = e.target.value.replace(/,/g, "");        
-        v = v.replace(/[^\d.]/g, "");
-        const parts = v.split(".");
-        if (parts.length > 2) v = parts[0] + "." + parts.slice(1).join(""); // keep first dot
-        if (v === "") { e.target.value = ""; return; }
-        if (!isNaN(v)) {
-    as
-          e.target.value = parseFloat(v).toLocaleString("en-US");
-        } else {
-          e.target.value = "";
-        }
-      });
+    function showSection(sectionId) {
+      document.getElementById("buySection").style.display = "none";
+      document.getElementById("sellSection").style.display = "none";
+      document.getElementById(sectionId).style.display = "block";
     }
 
-    setupFormatter("quantity");
-    setupFormatter("marketPrice");
+const RATE = 0.0211;
 
-    function calculateFee() {
-      
-      const rawQty = document.getElementById("quantity").value.replace(/,/g, "");
-      const rawPrice = document.getElementById("marketPrice").value.replace(/,/g, "");
+function calculateFee(type) {
+  const qtyId = type === "buy" ? "buyQuantity" : "sellQuantity";
+  const priceId = type === "buy" ? "buyMarketPrice" : "sellMarketPrice";
+  const resultId = type === "buy" ? "buyResult" : "sellResult";
 
-      const quantity = parseFloat(rawQty);
-      const marketPrice = parseFloat(rawPrice);
+  const rawQty = document.getElementById(qtyId).value.replace(/,/g, "");
+  const rawPrice = document.getElementById(priceId).value.replace(/,/g, "");
 
-      if (isNaN(quantity) || quantity <= 0) {
-        alert("Please enter a valid quantity (greater than 0).");
-        return;
-      }
-      if (isNaN(marketPrice) || marketPrice <= 0) {
-        alert("Please enter a valid market/limit price (greater than 0).");
-        return;
-      }
+  const quantity = parseFloat(rawQty);
+  const marketPrice = parseFloat(rawPrice);
 
-      const tradeValue = quantity * marketPrice;      
-      const fee = quantity * RATE * marketPrice;      
-      
-      const total = tradeValue + fee;
+  if (isNaN(quantity) || quantity <= 0) {
+    alert("Please enter a valid quantity (greater than 0).");
+    return;
+  }
+  if (isNaN(marketPrice) || marketPrice <= 0) {
+    alert("Please enter a valid market/limit price (greater than 0).");
+    return;
+  }
 
-      const resultDiv = document.getElementById("result");
-      resultDiv.style.display = "block";
-      resultDiv.innerHTML =
-       "Transaction Value" +
-        "CBE CAPITAL Fee 1.6%<br>" +
-        "ECMA Fee: 0.15%<br>" +
-        "ESX Fee: 0.36%<br>" +
-        "CSD Fee: 0.00%<br>" +
-        "📊 Fee Rate (equity): " + (RATE * 100).toFixed(2) + "%<br><br>" +
+  const tradeValue = quantity * marketPrice;
 
-        "Quantity: " + quantity.toLocaleString("en-US") + "<br>" +
-        "Market Price (per security): " + marketPrice.toLocaleString("en-US") + " ETB<br>" +
-        "Trade Value (quantity × price): <strong>" + tradeValue.toLocaleString("en-US") + " ETB</strong><br>" +
-        "💰 Transaction Fee (quantity × 2.11% × price): <strong>" + fee.toLocaleString("en-US") + " ETB</strong><br><br>" +
+  // fees
+  const feeCBE = tradeValue * 0.016;   // 1.6%
+  const feeECMA = tradeValue * 0.0015; // 0.15%
+  const feeESX = tradeValue * 0.0036;  // 0.36%
+  const csdFee = 0;                    // 0%
 
-        "📦 Total what you have to send is  (trade value + fee): <strong>" + total.toLocaleString("en-US") + " ETB</strong>";
-    }
+  const fee = feeCBE + feeECMA + feeESX + csdFee;
+  const total = tradeValue + fee;
+
+  const resultDiv = document.getElementById(resultId);
+  resultDiv.style.display = "block";
+
+  resultDiv.innerHTML = `
+    <h4>${type === "buy" ? "Buy" : "Sell"} Calculation Result</h4>
+    <table class="result-table">
+      <thead>
+        <tr>
+          <th>Company / Fee Type</th>
+          <th>% Rate</th>
+          <th>Amount (ETB)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>CBE CAPITAL</td><td>1.6%</td><td>${feeCBE.toLocaleString("en-US")}</td></tr>
+        <tr><td>ECMA</td><td>0.15%</td><td>${feeECMA.toLocaleString("en-US")}</td></tr>
+        <tr><td>ESX</td><td>0.36%</td><td>${feeESX.toLocaleString("en-US")}</td></tr>
+        <tr><td>CSD</td><td>0.00%</td><td>${csdFee.toFixed(2)}</td></tr>
+        <tr><td><strong>Total Fee</strong></td><td><strong>${(RATE*100).toFixed(2)}%</strong></td><td><strong>${fee.toLocaleString("en-US")}</strong></td></tr>
+      </tbody>
+    </table>
+
+    <br>
+
+    <table class="result-table">
+      <tbody>
+        <tr><td>Quantity</td><td>${quantity.toLocaleString("en-US")}</td></tr>
+        <tr><td>Market Price (per security)</td><td>${marketPrice.toLocaleString("en-US")} ETB</td></tr>
+        <tr><td>Trade Value</td><td>${tradeValue.toLocaleString("en-US")} ETB</td></tr>
+        <tr><td>📦 Total what you have to send (value + fee)</td><td><strong>${total.toLocaleString("en-US")} ETB</strong></td></tr>
+      </tbody>
+    </table>
+  `;
+}
+
+
   </script>
 </body>
 </html>
