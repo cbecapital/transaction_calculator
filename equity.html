@@ -6,7 +6,6 @@
   <link rel="stylesheet" href="equity.css">
 </head> 
 <body>     
-  <button class="home-btn" onclick="location.href='index.html'">Home</button>
 
 <video autoplay muted loop id="bg-video">
   <source src="cbe-logo-2.mp4" type="video/mp4">
@@ -14,7 +13,9 @@
 
 
 <div class="container"> 
-  <h3>Transaction Fee Calculator For Equity Main & Growth Market</h3>
+    <button class="home-btn" onclick="location.href='index.html'">Home</button>
+
+  <h1>Transaction Fee Calculator For Equity Main & Growth Market</h1>
 
   <div class="button-row">
     <button class="btn" onclick="showSection('buySection')">Buy</button>
@@ -25,7 +26,7 @@
 
   <!-- BUY SECTION -->
   <div id="buySection" style="display:none; margin-top:20px;">
-    <h4>Buy Transaction</h4>
+    <h2>Buy Transaction</h2>
     <label for="buyQuantity">Enter Quantity (number of securities):</label>
     <input type="text" id="buyQuantity" placeholder="e.g. 100">
 
@@ -38,7 +39,7 @@
 
   <!-- SELL SECTION -->
   <div id="sellSection" style="display:none; margin-top:20px;">
-    <h4>Sell Transaction</h4>
+    <h2>Sell Transaction</h2>
     <label for="sellQuantity">Enter Quantity (number of securities):</label>
     <input type="text" id="sellQuantity" placeholder="e.g. 100">
 
@@ -87,7 +88,12 @@ function calculateFee(type) {
   const csdFee = 0;                    // 0%
 
   const fee = feeCBE + feeECMA + feeESX + csdFee;
-  const total = tradeValue + fee;
+let total;
+if (type === "buy") {
+  total = tradeValue + fee; // buy keeps original calculation
+} else {
+  total = (tradeValue - fee) // sell subtracts fee and applies multiplier
+}
 
   const resultDiv = document.getElementById(resultId);
   resultDiv.style.display = "block";
@@ -95,9 +101,16 @@ function calculateFee(type) {
   resultDiv.innerHTML = `
     <h4>${type === "buy" ? "Buy" : "Sell"} Calculation Result</h4>
     <table class="result-table">
+       <tbody>
+        <tr><td>Quantity</td><td>${quantity.toLocaleString("en-US")}</td></tr>
+        <tr><td>Market Price (per security)</td><td>${marketPrice.toLocaleString("en-US")} ETB</td></tr>
+        <tr><td>Trade Value</td><td>${tradeValue.toLocaleString("en-US")} ETB</td></tr>
+      </tbody>
+      <table class="result-table">
+     
       <thead>
         <tr>
-          <th>Company / Fee Type</th>
+          <th>Company </th>
           <th>% Rate</th>
           <th>Amount (ETB)</th>
         </tr>
@@ -107,7 +120,7 @@ function calculateFee(type) {
         <tr><td>ECMA</td><td>0.15%</td><td>${feeECMA.toLocaleString("en-US")}</td></tr>
         <tr><td>ESX</td><td>0.36%</td><td>${feeESX.toLocaleString("en-US")}</td></tr>
         <tr><td>CSD</td><td>0.00%</td><td>${csdFee.toFixed(2)}</td></tr>
-        <tr><td><strong>Total Fee</strong></td><td><strong>${(RATE*100).toFixed(2)}%</strong></td><td><strong>${fee.toLocaleString("en-US")}</strong></td></tr>
+        <tr><td><strong>📊Total Fee</strong></td><td><strong>${(RATE*100).toFixed(2)}%</strong></td><td><strong>${fee.toLocaleString("en-US")}</strong></td></tr>
       </tbody>
     </table>
 
@@ -115,10 +128,9 @@ function calculateFee(type) {
 
     <table class="result-table">
       <tbody>
-        <tr><td>Quantity</td><td>${quantity.toLocaleString("en-US")}</td></tr>
-        <tr><td>Market Price (per security)</td><td>${marketPrice.toLocaleString("en-US")} ETB</td></tr>
+        
         <tr><td>Trade Value</td><td>${tradeValue.toLocaleString("en-US")} ETB</td></tr>
-        <tr><td>📦 Total what you have to send (value + fee)</td><td><strong>${total.toLocaleString("en-US")} ETB</strong></td></tr>
+        <tr><td>📦 Total (value + fee)</td><td><strong>${total.toLocaleString("en-US")} ETB</strong></td></tr>
       </tbody>
     </table>
   `;
