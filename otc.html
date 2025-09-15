@@ -3,80 +3,192 @@
   <meta charset="UTF-8"> 
   <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
   <title>Transaction Fee Calculator</title> 
-  <link rel="stylesheet" href="calculator.css">
+  <link rel="stylesheet" href="equity.css">
 </head> 
-<body> 
-    <video autoplay muted loop id="bg-video">
-  <source src="cbe logo 2.mp4" type="video/mp4">
+<body>     
+
+<video autoplay muted loop id="bg-video">
+  <source src="cbe-logo-2.mp4" type="video/mp4">
 </video>
-  <div class="container"> 
-    <h2>Transaction Fee Calculator</h2> 
- 
-    <label for="security">Choose Security:</label> 
-    <select id="security"> 
-        <option value="0.0211">Equity Main & Growth Market</option>  
-      <option value="0.0265">OTC / Unlisted Market</option> 
-      <option value="0.0251">OTC / Mutulal Funds & ETFs</option> 
-      <option value="0.00315">Corporate Bond</option> 
-      <option value="0.00126">GoE Treasury Bills</option> 
-      <option value="0.00126">Commercial Paper</option> 
-      <option value="0.00126">Sub-National Bonds</option> 
-      <option value="0.00126">Sukuks</option> 
-      <option value="0.00105">Interbank Money Market / Repo</option> 
-    </select> 
-  <label for="amount">Enter the market price  or the limit price:</label> 
-    <input type="text" id="amount" placeholder="Enter amount..."> 
-     <label for="amount">Enter price of the security :</label> 
-    <input type="text" id="amount" placeholder="Enter amount..."> 
 
-    <label for="amount">Enter Amount (ETB):</label> 
-    <input type="text" id="amount" placeholder="Enter amount..."> 
-    
- 
-    <button onclick="calculateFee()">Calculate</button> 
- 
-    <div id="result"></div> 
-  </div> 
- 
-  <script> 
-    const amountInput = document.getElementById("amount"); 
- 
-    // Format with commas as user types 
-    amountInput.addEventListener("input", (e) => { 
-      let value = e.target.value.replace(/,/g, ""); 
-      if (!isNaN(value) && value !== "") { 
-        e.target.value = parseFloat(value).toLocaleString("en-US"); 
-      } else { 
-        e.target.value = ""; 
-      } 
-    }); 
- 
-    function calculateFee() { 
-      let rate = parseFloat(document.getElementById("security").value); 
-      let rawAmount = document.getElementById("amount").value.replace(/,/g, ""); 
-      let amount = parseFloat(rawAmount); 
- 
-      if (isNaN(amount) || amount <= 0) { 
-        alert("Please enter a valid amount."); 
-        return; 
-      } 
- 
-      let fee = amount * rate; 
-      let total = amount + fee; 
- 
-      let resultDiv = document.getElementById("result"); 
-      resultDiv.style.display = "block"; 
-      resultDiv.innerHTML = 
-   "CBE CAPITAL Fee 1.6%<br>" +
-   " ECMA Fee:0.15%<br>" +
-   " ESX Fee: 0.36%<br>" +
-   " CSD Fee: 0.00%<br>" +
-   "📊 Total Fee Rate: " + (rate*100).toFixed(3) + "%<br>" +
+    <button class="home-btn" onclick="location.href='index.html'">Home</button>
 
-   "💰 Transaction Fee: " + fee.toLocaleString("en-US") + " ETB<br>" +
-   "📦 So what you have to send in total is: <strong>" + total.toLocaleString("en-US") + " ETB</strong>";
+<div class="container"> 
+<div class="ticker">
+  <div class="ticker-label">Closing Prices:</div>
+  <div class="ticker-content">
+    <span>WGBX: 1991</span>
+    <span>GDAB: 1057</span>
+    <span>TBL182: 4700</span>
+    <span>QNT9: 842</span>
+    <span>XYZ: 1200</span>
+    <span>ABC: 340</span>
 
-    } 
-  </script> 
-</body> 
+    <!-- duplicate for smooth infinite loop -->
+    <span>WGBX: 1991</span>
+    <span>GDAB: 1057</span>
+    <span>TBL182: 4700</span>
+    <span>QNT9: 842</span>
+    <span>XYZ: 1200</span>
+    <span>ABC: 340</span>
+  </div>
+</div>
+
+
+  <h1>Transaction Fee Calculator For OTC Market </h1>
+
+  <div class="button-row">
+    <button class="btn" onclick="showSection('buySection')">Buy</button>
+    <button class="btn" onclick="showSection('sellSection')">Sell</button>
+  </div>
+
+
+
+  <!-- BUY SECTION -->
+  <div id="buySection" style="display:none; margin-top:20px;">
+    <h2>Buy Transaction</h2>
+    <label for="buyQuantity">Enter Quantity (number of securities):</label>
+    <input type="text" id="buyQuantity" placeholder="e.g. 100">
+
+    <label for="buyMarketPrice">Enter Price (per security):</label>
+    <input type="text" id="buyMarketPrice" placeholder="e.g. 120.50">
+
+    <button onclick="calculateFee('buy')">Calculate Buy</button>
+    <div id="buyResult"></div>
+  </div>
+
+  <!-- SELL SECTION -->
+  <div id="sellSection" style="display:none; margin-top:20px;">
+    <h2>Sell Transaction</h2>
+    <label for="sellQuantity">Enter Quantity (number of securities):</label>
+    <input type="text" id="sellQuantity" placeholder="e.g. 100">
+
+    <label for="sellMarketPrice">Enter Market / Limit Price (per security):</label>
+    <input type="text" id="sellMarketPrice" placeholder="e.g. 120.50">
+
+    <button onclick="calculateFee('sell')">Calculate Sell</button>
+    <div id="sellResult"></div>
+  </div>
+
+  <script>
+    function showSection(sectionId) {
+      document.getElementById("buySection").style.display = "none";
+      document.getElementById("sellSection").style.display = "none";
+      document.getElementById(sectionId).style.display = "block";
+    }
+
+const RATE = 0.0265;
+
+function calculateFee(type) {
+  const qtyId = type === "buy" ? "buyQuantity" : "sellQuantity";
+  const priceId = type === "buy" ? "buyMarketPrice" : "sellMarketPrice";
+  const resultId = type === "buy" ? "buyResult" : "sellResult";
+
+  const rawQty = document.getElementById(qtyId).value.replace(/,/g, "");
+  const rawPrice = document.getElementById(priceId).value.replace(/,/g, "");
+
+  const quantity = parseFloat(rawQty);
+  const marketPrice = parseFloat(rawPrice);
+
+  if (isNaN(quantity) || quantity <= 0) {
+    alert("Please enter a valid quantity (greater than 0).");
+    return;
+  }
+  if (isNaN(marketPrice) || marketPrice <= 0) {
+    alert("Please enter a valid market/limit price (greater than 0).");
+    return;
+  }
+
+  const tradeValue = quantity * marketPrice;
+
+  // fees
+  const feeCBE = tradeValue * 0.02;   // 2%
+  const feeECMA = tradeValue * 0.0015; // 0.15%
+  const feeESX = tradeValue * 0.005;  // 0.5%
+  const csdFee = 0;                    // 0%
+
+  const fee = feeCBE + feeECMA + feeESX + csdFee;
+let total;
+if (type === "buy") {
+  total = tradeValue + fee; // buy keeps original calculation
+} else {
+  total = (tradeValue - fee) // sell subtracts fee and applies multiplier
+}
+
+  const resultDiv = document.getElementById(resultId);
+  resultDiv.style.display = "block";
+
+  resultDiv.innerHTML = `
+    <h4>${type === "buy" ? "Buy" : "Sell"} Calculation Result</h4>
+    <table class="result-table">
+      
+       <tbody>
+        <tr><td>Quantity</td><td>${quantity.toLocaleString("en-US")}</td></tr>
+        <tr><td>Market Price (per security)</td><td>${marketPrice.toLocaleString("en-US")} ETB</td></tr>
+        <tr><td>Transaction Value</td><td>${tradeValue.toLocaleString("en-US")} ETB</td></tr>
+      </tbody>
+      <table class="result-table">
+     
+      <!-- CBE CAPITAL separate table -->
+<table class="result-table">
+  <thead>
+    <tr>
+      <th>Company</th>
+      <th>Commission Fee</th>
+      <th>Amount (ETB)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>CBE CAPITAL</td>
+      <td>2.0%</td>
+      <td>${feeCBE.toLocaleString("en-US")}</td>
+    </tr>
+  </tbody>
+</table>
+
+<br>
+
+<!-- Other fees table -->
+<table class="result-table">
+  <thead>
+    <tr>
+      <th>Company</th>
+      <th>% Fee</th>
+      <th>Amount (ETB)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>ECMA</td><td>0.0015%</td><td>${feeECMA.toLocaleString("en-US")}</td></tr>
+    <tr><td>ESX</td><td>0.005%</td><td>${feeESX.toLocaleString("en-US")}</td></tr>
+    <tr><td>CSD</td><td>0.00%</td><td>${csdFee.toFixed(2)}</td></tr>
+    <tr>
+      <td><strong>📊 Total </strong></td>
+      <td><strong>${(RATE*100).toFixed(2)}%</strong></td>
+      <td><strong>${fee.toLocaleString("en-US")}</strong></td>
+    </tr>
+  </tbody>
+</table>
+
+    <br>
+
+    <table class="result-table">
+      <tbody>
+        <table class="result-table">
+  <tbody>
+    <tr>
+      <td>📦 ${type === "buy" ? "Cost Basis" : "Net Proceeds"}</td>
+      <td><strong>${total.toLocaleString("en-US")} ETB</strong></td>
+    </tr>
+  </tbody>
+</table>
+
+      </tbody>
+    </table>
+  `;
+}
+
+
+  </script>
+</body>
 </html>

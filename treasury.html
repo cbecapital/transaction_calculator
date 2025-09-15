@@ -1,102 +1,342 @@
+<!DOCTYPE html>
 <html lang="en"> 
 <head> 
   <meta charset="UTF-8"> 
   <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
   <title>Transaction Fee Calculator</title> 
-  <link rel="stylesheet" href="index.css">
+  <link rel="stylesheet" href="treasury.css">
 </head> 
-<body> 
+<body>     
+
 <video autoplay muted loop id="bg-video">
   <source src="cbe-logo-2.mp4" type="video/mp4">
 </video>
 
-  <div class="container"> 
-            <button class="btn" onclick="location.href='index.html'">Home </button>
-        <button class="btn" onclick="location.href='index.html'">Buy</button>
 
-        <button class="btn" onclick="location.href='index.html'">Sell</button>
+<button class="home-btn" onclick="location.href='index.html'">Home</button>
 
-   <h3>Transaction Fee Calculator For treasury </h3>
- 
-
-    <label for="quantity">Enter Quantity (number of securities):</label>
-    <input type="text" id="quantity" placeholder="e.g. 100">
-
-    <label for="marketPrice">Enter Price of treasury bill (per security):</label>
-    <input type="text" id="marketPrice" placeholder="e.g. 120.50">
-    
-    <label for="marketPrice"> Muaturity date :</label>
-    <input type="text" id="marketPrice" placeholder="22/05/2025">
-
-    <button onclick="calculateFee()">Calculate</button>
-
-    <div id="result"></div>
+<div class="container"> 
+  <div class="ticker">
+    <div class="ticker-label">Closing Prices:</div>
+    <div class="ticker-content">
+      <span>WGBX: 1991</span>
+      <span>GDAB: 1057</span>
+      <span>TBL182: 4700</span>
+      <span>QNT9: 842</span>
+      <span>XYZ: 1200</span>
+      <span>ABC: 340</span>
+      <!-- duplicate for smooth infinite loop -->
+      <span>WGBX: 1991</span>
+      <span>GDAB: 1057</span>
+      <span>TBL182: 4700</span>
+      <span>QNT9: 842</span>
+      <span>XYZ: 1200</span>
+      <span>ABC: 340</span>
+    </div>
   </div>
 
-  <script>
-  
-    const RATE = 0.0211;
+  <h2>T-Bill Calculator (Ethiopia)</h2>
+    <h2>T-Bill Auction Calendar</h2>
+  <div class="calendar-container">
+    <div class="calendar-header">
+      <button onclick="prevMonth()">⬅ Prev</button>
+      <h3 id="monthYear"></h3>
+      <button onclick="nextMonth()">Next ➡</button>
+    </div>
+    <div id="calendar" class="calendar"></div>
+  </div>
 
+  <div id="popup" class="popup">
+    <h3>Auction Summary</h3>
+    <table>
+      <thead>
+        <tr>
+          <th> </th>
+          <th>1 Month</th>
+          <th>3 Months</th>
+          <th>6 Months</th>
+          <th>1 Year</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Auction Amount</td>
+          <td>4B</td>
+          <td>8B</td>
+          <td>12B</td>
+          <td>22B</td>
+        </tr>
+        <tr>
+          <td>Face Value</td>
+          <td>4.7k</td>
+          <td>4.7k</td>
+          <td>5k</td>
+          <td>5k</td>
+        </tr>
+        <tr>
+          <td>% Rate</td>
+          <td>11%</td>
+          <td>12%</td>
+          <td>15%</td>
+          <td>15%</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>For full details and current schedules, visit the <a href="https://nbe.gov.et/treasury-bills/" target="_blank">National Bank of Ethiopia: Treasury Bills</a>.</p>
+
+    <button onclick="closePopup()">Close</button>
     
-    function setupFormatter(id) {
-      const el = document.getElementById(id);
-      el.addEventListener("input", (e) => {
-        let v = e.target.value.replace(/,/g, "");        
-        v = v.replace(/[^\d.]/g, "");
-        const parts = v.split(".");
-        if (parts.length > 2) v = parts[0] + "." + parts.slice(1).join(""); // keep first dot
-        if (v === "") { e.target.value = ""; return; }
-        if (!isNaN(v)) {
-    as
-          e.target.value = parseFloat(v).toLocaleString("en-US");
-        } else {
-          e.target.value = "";
-        }
-      });
+  </div>
+
+  
+<script>
+let currentDate = new Date();
+let auctionDays = [];
+
+function generateAuctionDays() {
+  let start = new Date("2025-09-03"); // base auction
+  let end = new Date();
+  end.setFullYear(end.getFullYear() + 5);
+
+  let d = new Date(start);
+  while (d <= end) {
+    auctionDays.push(new Date(d).toDateString());
+    d.setDate(d.getDate() + 14);
+  }
+}
+
+function generateCalendar(date) {
+  const calendar = document.getElementById("calendar");
+  const monthYear = document.getElementById("monthYear");
+
+  calendar.innerHTML = "";
+
+  const year = date.getFullYear();
+  const month = date.getMonth();
+
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+
+  monthYear.innerText = `${firstDay.toLocaleString("default", { month: "long" })} ${year}`;
+
+  // Weekday headers
+  const daysOfWeek = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  daysOfWeek.forEach(d => {
+    const div = document.createElement("div");
+    div.classList.add("day-name");
+    div.innerText = d;
+    calendar.appendChild(div);
+  });
+
+  // Blank spaces before month start
+  for (let i = 0; i < firstDay.getDay(); i++) {
+    calendar.appendChild(document.createElement("div"));
+  }
+
+  // Days
+  for (let d = 1; d <= lastDay.getDate(); d++) {
+    let dayDiv = document.createElement("div");
+    dayDiv.classList.add("day");
+    let fullDate = new Date(year, month, d);
+
+    dayDiv.innerText = d;
+
+    if (auctionDays.includes(fullDate.toDateString())) {
+      dayDiv.classList.add("auction-day");
+      dayDiv.onclick = () => openPopup(fullDate.toDateString());
     }
 
-    setupFormatter("quantity");
-    setupFormatter("marketPrice");
+    calendar.appendChild(dayDiv);
+  }
+}
 
-    function calculateFee() {
-      
-      const rawQty = document.getElementById("quantity").value.replace(/,/g, "");
-      const rawPrice = document.getElementById("marketPrice").value.replace(/,/g, "");
+function prevMonth() {
+  currentDate.setMonth(currentDate.getMonth() - 1);
+  generateCalendar(currentDate);
+}
 
-      const quantity = parseFloat(rawQty);
-      const marketPrice = parseFloat(rawPrice);
+function nextMonth() {
+  currentDate.setMonth(currentDate.getMonth() + 1);
+  generateCalendar(currentDate);
+}
 
-      if (isNaN(quantity) || quantity <= 0) {
-        alert("Please enter a valid quantity (greater than 0).");
-        return;
-      }
-      if (isNaN(marketPrice) || marketPrice <= 0) {
-        alert("Please enter a valid market/limit price (greater than 0).");
-        return;
-      }
+function openPopup(date) {
+  document.getElementById("popup").style.display = "block";
+}
 
-      const tradeValue = quantity * marketPrice;      
-      const fee = quantity * RATE * marketPrice;      
-      
-      const total = tradeValue + fee;
+function closePopup() {
+  document.getElementById("popup").style.display = "none";
+}
 
-      const resultDiv = document.getElementById("result");
-      resultDiv.style.display = "block";
-      resultDiv.innerHTML =
-       "Transaction Value" +
-        "CBE CAPITAL Fee 1.6%<br>" +
-        "ECMA Fee: 0.15%<br>" +
-        "ESX Fee: 0.36%<br>" +
-        "CSD Fee: 0.00%<br>" +
-        "📊 Fee Rate (equity): " + (RATE * 100).toFixed(2) + "%<br><br>" +
+// Initialize
+generateAuctionDays();
+generateCalendar(currentDate);
+</script>
 
-        "Quantity: " + quantity.toLocaleString("en-US") + "<br>" +
-        "Market Price (per security): " + marketPrice.toLocaleString("en-US") + " ETB<br>" +
-        "Trade Value (quantity × price): <strong>" + tradeValue.toLocaleString("en-US") + " ETB</strong><br>" +
-        "💰 Transaction Fee (quantity × 2.11% × price): <strong>" + fee.toLocaleString("en-US") + " ETB</strong><br><br>" +
+  <div class="button-row">
+    <button class="btn" onclick="showSection('buySection')">Buy T-Bills</button>
+    <button class="btn" onclick="showSection('sellSection')">Sell T-Bills</button>
+  </div>
 
-        "📦 Total what you have to send is  (trade value + fee): <strong>" + total.toLocaleString("en-US") + " ETB</strong>";
-    }
-  </script>
+  <!-- BUY SECTION -->
+  <div id="buySection" style="display:none; margin-top:20px;">
+    <h3>Buy T-Bills</h3>
+
+    <label for="buyFaceValue">Face Value of 1 T-bill (ETB):</label>
+    <input type="number" id="buyFaceValue" placeholder="e.g. 100000" />
+
+    <label for="buyQuantity">Quantity:</label>
+    <input type="number" id="buyQuantity" placeholder="e.g. 10" />
+
+    <label for="buyMaturity">Maturity Period:</label>
+    <select id="buyMaturity">
+      <option value="28">1 Month (28 days)</option>
+      <option value="91">3 Months (91 days)</option>
+      <option value="182">6 Months (182 days)</option>
+      <option value="365">1 Year (365 days)</option>
+    </select>
+
+    <label for="buyRate">Gov Interest Rate (% per year):</label>
+    <input type="number" id="buyRate" placeholder="e.g. 6.8" step="0.01" />
+
+    <button onclick="calculate('buy')">Calculate Buy</button>
+
+    <h3>Transaction Fees:</h3>
+    <table border="1" id="buyFeeTable">
+      <thead>
+        <tr>
+          <th>Company</th>
+          <th>% Rate</th>
+          <th>Amount (ETB)</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+      <tfoot>
+        <tr>
+          <td colspan="2"><strong>Total Fee</strong></td>
+          <td id="buyTotalFee"></td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <h3>Results:</h3>
+    <div id="buyResults"></div>
+  </div>
+
+  <!-- SELL SECTION -->
+  <div id="sellSection" style="display:none; margin-top:20px;">
+    <h3>Sell T-Bills</h3>
+
+    <label for="sellFaceValue">Face Value of 1 T-bill (ETB):</label>
+    <input type="number" id="sellFaceValue" placeholder="e.g. 100000" />
+
+    <label for="sellQuantity">Quantity:</label>
+    <input type="number" id="sellQuantity" placeholder="e.g. 10" />
+
+    <label for="sellMaturity">Maturity Period:</label>
+    <select id="sellMaturity">
+      <option value="28">1 Month (28 days)</option>
+      <option value="91">3 Months (91 days)</option>
+      <option value="182">6 Months (182 days)</option>
+      <option value="365">1 Year (365 days)</option>
+    </select>
+
+    <label for="sellRate">Gov Interest Rate (% per year):</label>
+    <input type="number" id="sellRate" placeholder="e.g. 6.8" step="0.01" />
+
+    <button onclick="calculate('sell')">Calculate Sell</button>
+
+    <h3>Transaction Fees:</h3>
+    <table border="1" id="sellFeeTable">
+      <thead>
+        <tr>
+          <th>Company</th>
+          <th>% Rate</th>
+          <th>Amount (ETB)</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+      <tfoot>
+        <tr>
+          <td colspan="2"><strong>Total Fee</strong></td>
+          <td id="sellTotalFee"></td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <h3>Results:</h3>
+    <div id="sellResults"></div>
+  </div>
+</div>
+
+<script>
+function showSection(sectionId) {
+  document.getElementById("buySection").style.display = "none";
+  document.getElementById("sellSection").style.display = "none";
+  document.getElementById(sectionId).style.display = "block";
+}
+
+function calculate(type) {
+  const faceValue = parseFloat(document.getElementById(type + 'FaceValue').value);
+  const quantity = parseInt(document.getElementById(type + 'Quantity').value);
+  const days = parseInt(document.getElementById(type + 'Maturity').value);
+  const rate = parseFloat(document.getElementById(type + 'Rate').value) / 100;
+
+  if (isNaN(faceValue) || isNaN(quantity) || isNaN(rate)) {
+    alert("Please enter all fields (face value, quantity, rate)!");
+    return;
+  }
+
+  // Total investment
+  const investmentAmount = faceValue * quantity;
+  
+
+  // --- Transaction Fees ---
+  const fees = [
+    { company: "CBE CAPITAL", rate: 0.10 }, // 0.10%
+    { company: "ECMA", rate: 0.005 },        // 0.05%
+    { company: "ESX", rate: 0.021 },         // 0.21%
+    { company: "CSD", rate: 0.00 }          // 0.00%
+  ];
+
+
+  const tbody = document.querySelector(`#${type}FeeTable tbody`);
+  tbody.innerHTML = "";
+
+  let totalFeeAmount = 0;
+  fees.forEach(fee => {
+    const feeAmount = (investmentAmount * fee.rate) / 100;
+    totalFeeAmount += feeAmount;
+    
+
+    const row = `<tr>
+      <td>${fee.company}</td>
+      <td>${fee.rate}%</td>
+      <td>${feeAmount.toFixed(2)}</td>
+    </tr>`;
+    tbody.innerHTML += row;
+  });
+
+  document.getElementById(type + 'TotalFee').innerText = totalFeeAmount.toFixed(2);
+
+  // --- Results ---
+  const totalSend = investmentAmount + totalFeeAmount;
+  const dailyInterest = rate / 365;
+  const totalInterest = investmentAmount * dailyInterest * days;
+  const maturityValue = investmentAmount + totalInterest;
+  const netProfit = maturityValue - totalSend;
+
+  const resultsTable = `
+    <table border="1">
+      <tr><td><strong>Total Investment</strong></td><td>${investmentAmount.toFixed(2)} ETB</td></tr>
+      <tr><td><strong>Total to Send Broker</strong></td><td>${totalSend.toFixed(2)} ETB</td></tr>
+      <tr><td><strong>Maturity Value (after ${days} days)</strong></td><td>${maturityValue.toFixed(2)} ETB</td></tr>
+      <tr><td><strong>Net Profit (after fees)</strong></td><td>${netProfit.toFixed(2)} ETB</td></tr>
+    </table>
+  `;
+
+  document.getElementById(type + 'Results').innerHTML = resultsTable;
+}
+</script>
 </body>
 </html>

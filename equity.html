@@ -50,7 +50,7 @@
     <label for="buyQuantity">Enter Quantity (number of securities):</label>
     <input type="text" id="buyQuantity" placeholder="e.g. 100">
 
-    <label for="buyMarketPrice">Enter Market / Limit Price (per security):</label>
+    <label for="buyMarketPrice"> Price (per security):</label>
     <input type="text" id="buyMarketPrice" placeholder="e.g. 120.50">
 
     <button onclick="calculateFee('buy')">Calculate Buy</button>
@@ -103,8 +103,8 @@ function calculateFee(type) {
 
   // fees
   const feeCBE = tradeValue * 0.016;   // 1.6%
-  const feeECMA = tradeValue * 0.0015; // 0.15%
-  const feeESX = tradeValue * 0.0036;  // 0.36%
+  const feeECMA = tradeValue * 0.15; // 0.15%
+  const feeESX = tradeValue * 0.05;  // 0.36%
   const csdFee = 0;                    // 0%
 
   const fee = feeCBE + feeECMA + feeESX + csdFee;
@@ -121,36 +121,68 @@ if (type === "buy") {
   resultDiv.innerHTML = `
     <h4>${type === "buy" ? "Buy" : "Sell"} Calculation Result</h4>
     <table class="result-table">
+      
        <tbody>
         <tr><td>Quantity</td><td>${quantity.toLocaleString("en-US")}</td></tr>
         <tr><td>Market Price (per security)</td><td>${marketPrice.toLocaleString("en-US")} ETB</td></tr>
-        <tr><td>Trade Value</td><td>${tradeValue.toLocaleString("en-US")} ETB</td></tr>
+        <tr><td>Transaction Value</td><td>${tradeValue.toLocaleString("en-US")} ETB</td></tr>
       </tbody>
       <table class="result-table">
      
-      <thead>
-        <tr>
-          <th>Company </th>
-          <th>% Rate</th>
-          <th>Amount (ETB)</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr><td>CBE CAPITAL</td><td>1.6%</td><td>${feeCBE.toLocaleString("en-US")}</td></tr>
-        <tr><td>ECMA</td><td>0.15%</td><td>${feeECMA.toLocaleString("en-US")}</td></tr>
-        <tr><td>ESX</td><td>0.36%</td><td>${feeESX.toLocaleString("en-US")}</td></tr>
-        <tr><td>CSD</td><td>0.00%</td><td>${csdFee.toFixed(2)}</td></tr>
-        <tr><td><strong>📊Total Fee</strong></td><td><strong>${(RATE*100).toFixed(2)}%</strong></td><td><strong>${fee.toLocaleString("en-US")}</strong></td></tr>
-      </tbody>
-    </table>
+      <!-- CBE CAPITAL separate table -->
+<table class="result-table">
+  <thead>
+    <tr>
+      <th>Company</th>
+      <th>Commission Fee</th>
+      <th>Amount (ETB)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>CBE CAPITAL</td>
+      <td>1.6%</td>
+      <td>${feeCBE.toLocaleString("en-US")}</td>
+    </tr>
+  </tbody>
+</table>
+
+<br>
+
+<!-- Other fees table -->
+<table class="result-table">
+  <thead>
+    <tr>
+      <th>Company</th>
+      <th>% Fee</th>
+      <th>Amount (ETB)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>ECMA</td><td>0.15%</td><td>${feeECMA.toLocaleString("en-US")}</td></tr>
+    <tr><td>ESX</td><td>0.36%</td><td>${feeESX.toLocaleString("en-US")}</td></tr>
+    <tr><td>CSD</td><td>0.00%</td><td>${csdFee.toFixed(2)}</td></tr>
+    <tr>
+      <td><strong>📊 Total </strong></td>
+      <td><strong>${(RATE*100).toFixed(2)}%</strong></td>
+      <td><strong>${fee.toLocaleString("en-US")}</strong></td>
+    </tr>
+  </tbody>
+</table>
 
     <br>
 
     <table class="result-table">
       <tbody>
-        
-        <tr><td>Trade Value</td><td>${tradeValue.toLocaleString("en-US")} ETB</td></tr>
-        <tr><td>📦 Total (value + fee)</td><td><strong>${total.toLocaleString("en-US")} ETB</strong></td></tr>
+        <table class="result-table">
+  <tbody>
+    <tr>
+      <td>📦 ${type === "buy" ? "Cost Basis" : "Net Proceeds"}</td>
+      <td><strong>${total.toLocaleString("en-US")} ETB</strong></td>
+    </tr>
+  </tbody>
+</table>
+
       </tbody>
     </table>
   `;

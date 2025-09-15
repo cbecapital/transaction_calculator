@@ -1,3 +1,172 @@
+.info-link {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: bold;
+}
+
+.info-link a {
+  color: #b4885b;              /* bronze highlight */
+  text-decoration: none;
+  transition: color 0.3s ease, text-shadow 0.3s ease;
+}
+
+.info-link a:hover {
+  color: #ffffff;
+  text-shadow: 0 0 8px #f7cca2; /* glowing gold hover */
+}
+
+/* Background matches equity theme */
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #1f3c88, #5272a8);
+  color: #fff;
+  text-align: center;
+  margin: 0;
+  padding: 30px;
+}
+
+h2 {
+  margin: 20px;
+  color: #ffffff;
+}
+
+/* Calendar box styled like container */
+.calendar-container {
+  max-width: 850px;
+  margin: auto;
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(15px);
+  padding: 25px;
+  border-radius: 20px;
+  box-shadow: 0px 10px 30px rgba(0,0,0,0.5);
+}
+
+/* Header navigation */
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  color: #fff;
+}
+
+.calendar-header button {
+  padding: 8px 14px;
+  background: #b4885b;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.3s ease;
+}
+
+.calendar-header button:hover {
+  background: #e4c5a6;
+  color: #000;
+}
+
+/* Calendar grid */
+.calendar {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.day-name {
+  font-weight: bold;
+  background: rgba(247, 238, 222, 0.3);
+  color: #f7cca2;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.day {
+  padding: 14px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.15);
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.day:hover {
+  background: rgba(255,255,255,0.35);
+  transform: scale(1.05);
+}
+
+/* Auction day highlight */
+.auction-day {
+  background: #b4885b;
+  color: #fff;
+  font-weight: bold;
+  border: 2px solid #f7cca2;
+}
+
+.auction-day:hover {
+  background: #f7cca2;
+  color: #000;
+}
+
+/* Popup box styled like container */
+.popup {
+  display: none;
+  position: fixed;
+  top: 20%;
+  left: 50%;
+  transform: translate(-50%, -20%);
+  background: rgba(255,255,255,0.95);
+  color: #000;
+  padding: 20px;
+  border-radius: 12px;
+  width: 420px;
+  box-shadow: 0px 10px 40px rgba(0,0,0,0.6);
+  z-index: 2000;
+}
+
+.popup table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.popup th, .popup td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+}
+
+.popup th {
+  background: #b4885b;
+  color: #fff;
+}
+
+.popup button {
+  margin-top: 12px;
+  padding: 8px 16px;
+  background: #b4885b;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.3s ease;
+}
+
+.popup button:hover {
+  background: #f7cca2;
+  color: #000;
+}
+
+
+
+
+
+
+
+
+
+
 /* Video background full screen */
 
 #bg-video {
@@ -96,7 +265,7 @@ body {
 h3 { 
   margin-bottom: 20px; 
   color: #ffffff; 
-  background: #204da1;
+  background: #b4885b;
   margin: 0; 
   padding: 0;
   display: flex; 
@@ -142,7 +311,7 @@ button:hover {
   padding: 15px; 
   border-radius: 10px; 
   background: #ecf9ff; 
-  color: #2c3e50; 
+  color: #502c2c; 
   font-weight: bold; 
   display: none; 
   text-align: left; 
@@ -203,7 +372,7 @@ button:hover {
   border-collapse: collapse;
   margin-top: 15px;
   background: rgba(247, 238, 222, 0.9);
-  color: #130950;
+  color: #50090d;
   border-radius: 10px;
   overflow: hidden;
 }
