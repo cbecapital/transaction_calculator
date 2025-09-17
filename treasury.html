@@ -35,8 +35,20 @@
     </div>
   </div>
 
-  <h2>T-Bill Calculator (Ethiopia)</h2>
-    <h2>T-Bill Auction Calendar</h2>
+
+
+
+
+
+
+<div> </div>
+<div> </div>
+
+
+  <button onclick="toggleCalendar()" id="calendarToggleBtn">Show Auction Calendar</button>
+
+<div id="calendarWrapper" style="display:none; margin-top:20px;">
+  <h2>T-Bill Auction Calendar</h2>
   <div class="calendar-container">
     <div class="calendar-header">
       <button onclick="prevMonth()">⬅ Prev</button>
@@ -45,6 +57,8 @@
     </div>
     <div id="calendar" class="calendar"></div>
   </div>
+</div>
+
 
   <div id="popup" class="popup">
     <h3>Auction Summary</h3>
@@ -90,6 +104,19 @@
 
   
 <script>
+  function toggleCalendar() {
+  const wrapper = document.getElementById("calendarWrapper");
+  const btn = document.getElementById("calendarToggleBtn");
+
+  if (wrapper.style.display === "none") {
+    wrapper.style.display = "block";
+    btn.innerText = "Hide Auction Calendar";
+  } else {
+    wrapper.style.display = "none";
+    btn.innerText = "Show Auction Calendar";
+  }
+}
+
 let currentDate = new Date();
 let auctionDays = [];
 
@@ -173,6 +200,21 @@ generateAuctionDays();
 generateCalendar(currentDate);
 </script>
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   <div class="button-row">
     <button class="btn" onclick="showSection('buySection')">Buy T-Bills</button>
     <button class="btn" onclick="showSection('sellSection')">Sell T-Bills</button>
@@ -213,12 +255,12 @@ generateCalendar(currentDate);
       <tbody></tbody>
       <tfoot>
         <tr>
-          <td colspan="2"><strong>Total Fee</strong></td>
+          <td colspan=><strong>Total Fee</strong></td>
+           <td colspan=><strong>0.126 %</strong></td>
           <td id="buyTotalFee"></td>
         </tr>
       </tfoot>
     </table>
-
     <h3>Results:</h3>
     <div id="buyResults"></div>
   </div>
@@ -246,7 +288,8 @@ generateCalendar(currentDate);
 
     <button onclick="calculate('sell')">Calculate Sell</button>
 
-    <h3>Transaction Fees:</h3>
+    
+    <h3>Transaction Fees:</h3> 
     <table border="1" id="sellFeeTable">
       <thead>
         <tr>
@@ -274,6 +317,7 @@ function showSection(sectionId) {
   document.getElementById("buySection").style.display = "none";
   document.getElementById("sellSection").style.display = "none";
   document.getElementById(sectionId).style.display = "block";
+  
 }
 
 function calculate(type) {

@@ -103,8 +103,8 @@ function calculateFee(type) {
 
   // fees
   const feeCBE = tradeValue * 0.016;   // 1.6%
-  const feeECMA = tradeValue * 0.15; // 0.15%
-  const feeESX = tradeValue * 0.05;  // 0.36%
+  const feeECMA = tradeValue * 0.0015; // 0.15%
+  const feeESX = tradeValue * 0.0036;  // 0.36%
   const csdFee = 0;                    // 0%
 
   const fee = feeCBE + feeECMA + feeESX + csdFee;
