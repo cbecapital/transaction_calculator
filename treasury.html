@@ -4,7 +4,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
   <title>Transaction Fee Calculator</title> 
-  <link rel="stylesheet" href="equity.css">
+  <link rel="stylesheet" href="treasury.css">
 </head> 
 <body>     
 
@@ -34,6 +34,182 @@
     <span>ABC: 340</span>
   </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+<div> </div>
+<div> </div>
+
+
+  <button onclick="toggleCalendar()" id="calendarToggleBtn">Show Auction Calendar</button>
+
+<div id="calendarWrapper" style="display:none; margin-top:20px;">
+  <h2>T-Bill Auction Calendar</h2>
+  <div class="calendar-container">
+    <div class="calendar-header">
+      <button onclick="prevMonth()">⬅ Prev</button>
+      <h1 id="monthYear"></h1>
+      <button onclick="nextMonth()">Next ➡</button>
+    </div>
+    <div id="calendar" class="calendar"></div>
+  </div>
+</div>
+
+
+  <div id="popup" class="popup">
+    <h3>Auction Summary</h3>
+    <table>
+      <thead>
+        <tr>
+          <th> </th>
+          <th>1 Month</th>
+          <th>3 Months</th>
+          <th>6 Months</th>
+          <th>1 Year</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Auction Amount</td>
+          <td>4B</td>
+          <td>8B</td>
+          <td>12B</td>
+          <td>22B</td>
+        </tr>
+        <tr>
+          <td>Face Value</td>
+          <td>4.7k</td>
+          <td>4.7k</td>
+          <td>5k</td>
+          <td>5k</td>
+        </tr>
+        <tr>
+          <td>% Rate</td>
+          <td>11%</td>
+          <td>12%</td>
+          <td>15%</td>
+          <td>15%</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>For full details and current schedules, visit the <a href="https://nbe.gov.et/treasury-bills/" target="_blank">National Bank of Ethiopia: Treasury Bills</a>.</p>
+
+    <button onclick="closePopup()">Close</button>
+    
+  </div>
+
+  
+<script>
+  function toggleCalendar() {
+  const wrapper = document.getElementById("calendarWrapper");
+  const btn = document.getElementById("calendarToggleBtn");
+
+  if (wrapper.style.display === "none") {
+    wrapper.style.display = "block";
+    btn.innerText = "Hide Auction Calendar";
+  } else {
+    wrapper.style.display = "none";
+    btn.innerText = "Show Auction Calendar";
+  }
+}
+
+let currentDate = new Date();
+let auctionDays = [];
+
+function generateAuctionDays() {
+  let start = new Date("2025-09-03"); // base auction
+  let end = new Date();
+  end.setFullYear(end.getFullYear() + 5);
+
+  let d = new Date(start);
+  while (d <= end) {
+    auctionDays.push(new Date(d).toDateString());
+    d.setDate(d.getDate() + 14);
+  }
+}
+
+function generateCalendar(date) {
+  const calendar = document.getElementById("calendar");
+  const monthYear = document.getElementById("monthYear");
+
+  calendar.innerHTML = "";
+
+  const year = date.getFullYear();
+  const month = date.getMonth();
+
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+
+  monthYear.innerText = `${firstDay.toLocaleString("default", { month: "long" })} ${year}`;
+
+  // Weekday headers
+  const daysOfWeek = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  daysOfWeek.forEach(d => {
+    const div = document.createElement("div");
+    div.classList.add("day-name");
+    div.innerText = d;
+    calendar.appendChild(div);
+  });
+
+  // Blank spaces before month start
+  for (let i = 0; i < firstDay.getDay(); i++) {
+    calendar.appendChild(document.createElement("div"));
+  }
+
+  // Days
+  for (let d = 1; d <= lastDay.getDate(); d++) {
+    let dayDiv = document.createElement("div");
+    dayDiv.classList.add("day");
+    let fullDate = new Date(year, month, d);
+
+    dayDiv.innerText = d;
+
+    if (auctionDays.includes(fullDate.toDateString())) {
+      dayDiv.classList.add("auction-day");
+      dayDiv.onclick = () => openPopup(fullDate.toDateString());
+    }
+
+    calendar.appendChild(dayDiv);
+  }
+}
+
+function prevMonth() {
+  currentDate.setMonth(currentDate.getMonth() - 1);
+  generateCalendar(currentDate);
+}
+
+function nextMonth() {
+  currentDate.setMonth(currentDate.getMonth() + 1);
+  generateCalendar(currentDate);
+}
+
+function openPopup(date) {
+  document.getElementById("popup").style.display = "block";
+}
+
+function closePopup() {
+  document.getElementById("popup").style.display = "none";
+}
+
+// Initialize
+generateAuctionDays();
+generateCalendar(currentDate);
+</script>
+
+
+
+
+
+
+
+
 
 
   <h1>Transaction Fee Calculator For Treasury Bill</h1>

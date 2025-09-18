@@ -1,3 +1,4 @@
+
 .info-link {
   margin-top: 20px;
   text-align: center;
@@ -5,13 +6,15 @@
   font-weight: bold;
 }
 
-.info-link a {
+.info-link a,
+.info-link a:visited {
   color: #b4885b;              /* bronze highlight */
   text-decoration: none;
   transition: color 0.3s ease, text-shadow 0.3s ease;
 }
 
-.info-link a:hover {
+.info-link a:hover,
+.info-link a:visited:hover {
   color: #ffffff;
   text-shadow: 0 0 8px #f7cca2; /* glowing gold hover */
 }
@@ -19,7 +22,7 @@
 /* Background matches equity theme */
 body {
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(135deg, #1f3c88, #5272a8);
+  background: linear-gradient(135deg, #dd6767, #5272a8);
   color: #fff;
   text-align: center;
   margin: 0;
@@ -115,7 +118,7 @@ h2 {
   top: 20%;
   left: 50%;
   transform: translate(-50%, -20%);
-  background: rgba(255,255,255,0.95);
+  background: rgba(122, 118, 118, 0.95);
   color: #000;
   padding: 20px;
   border-radius: 12px;
@@ -131,14 +134,14 @@ h2 {
 }
 
 .popup th, .popup td {
-  border: 1px solid #ddd;
+  border: 1px solid #070300;
   padding: 8px;
   text-align: center;
 }
 
 .popup th {
   background: #b4885b;
-  color: #fff;
+  color: #fdfaf7;
 }
 
 .popup button {
@@ -147,7 +150,7 @@ h2 {
   background: #b4885b;
   border: none;
   border-radius: 8px;
-  color: white;
+  color: rgb(247, 244, 244);
   cursor: pointer;
   font-weight: bold;
   transition: background 0.3s ease;
@@ -397,3 +400,27 @@ button:hover {
 }
 
 
+
+
+
+
+/* responsive */
+@media (max-width: 600px) {
+  .calendar {
+    grid-template-columns: repeat(2, 1fr); /* fewer columns on tiny screens */
+  }
+
+  .button-row {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .container {
+    width: 95%;
+    padding: 20px;
+  }
+
+  .ticker {
+    font-size: 12px;
+  }
+}
