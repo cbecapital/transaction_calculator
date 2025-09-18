@@ -227,3 +227,64 @@ button:hover {
   text-align: right;
 }
 
+
+
+
+
+
+
+
+
+/* ✅ Responsive adjustments */
+@media (max-width: 768px) {
+  .container {
+    width: 95%;
+    padding: 20px;
+  }
+
+  .button-row {
+    flex-direction: column; /* stack buttons vertically */
+    gap: 10px;
+  }
+
+  .button-row .btn {
+    width: 100%; /* full width buttons on small screens */
+  }
+
+  .result-table td {
+    font-size: 13px; /* slightly smaller text */
+    padding: 8px;
+  }
+
+  h1, h2 {
+    font-size: 1.4rem;
+  }
+
+  label {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    padding-top: 20px;
+  }
+
+  .container {
+    padding: 15px;
+    border-radius: 12px;
+  }
+
+  h1, h2 {
+    font-size: 1.2rem;
+  }
+
+  input, select, button {
+    font-size: 14px;
+    padding: 8px;
+  }
+
+  .result-table td {
+    font-size: 12px;
+  }
+}
