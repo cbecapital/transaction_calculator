@@ -214,159 +214,175 @@ generateCalendar(currentDate);
 
   <h1>Transaction Fee Calculator For Treasury Bill</h1>
 
+  
+
+
   <div class="button-row">
-    <button class="btn" onclick="showSection('buySection')">Buy</button>
-    <button class="btn" onclick="showSection('sellSection')">Sell</button>
+    <button class="btn" onclick="showSection('buySection')">Buy T-Bills</button>
+    <button class="btn" onclick="showSection('sellSection')">Sell T-Bills</button>
   </div>
-
-
 
   <!-- BUY SECTION -->
   <div id="buySection" style="display:none; margin-top:20px;">
-    <h2>Buy Transaction</h2>
-    <label for="buyQuantity">Enter Quantity of Treasury (number of securities):</label>
-    <input type="text" id="buyQuantity" placeholder="e.g. 100">
+    <h3>Buy T-Bills</h3>
 
-    <label for="buyMarketPrice"> Price (per security):</label>
-    <input type="text" id="buyMarketPrice" placeholder="e.g. 120.50">
+    <label for="buyFaceValue">Face Value of 1 T-bill (ETB):</label>
+    <input type="number" id="buyFaceValue" placeholder="e.g. 100000" />
 
-    <button onclick="calculateFee('buy')">Calculate Buy</button>
-    <div id="buyResult"></div>
+    <label for="buyQuantity">Quantity:</label>
+    <input type="number" id="buyQuantity" placeholder="e.g. 10" />
+
+    <label for="buyMaturity">Maturity Period:</label>
+    <select id="buyMaturity">
+      <option value="28">1 Month (28 days)</option>
+      <option value="91">3 Months (91 days)</option>
+      <option value="182">6 Months (182 days)</option>
+      <option value="365">1 Year (365 days)</option>
+    </select>
+
+    <label for="buyRate">Gov Interest Rate (% per year):</label>
+    <input type="number" id="buyRate" placeholder="e.g. 6.8" step="0.01" />
+
+    <button onclick="calculate('buy')">Calculate Buy</button>
+
+    <h3>Transaction Fees:</h3>
+    <table border="1" id="buyFeeTable">
+      <thead>
+        <tr>
+          <th>Company</th>
+          <th>% Rate</th>
+          <th>Amount (ETB)</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+      <tfoot>
+        <tr>
+          <td colspan=><strong>Total Fee</strong></td>
+           <td colspan=><strong>0.126 %</strong></td>
+          <td id="buyTotalFee"></td>
+        </tr>
+      </tfoot>
+    </table>
+    <h3>Results:</h3>
+    <div id="buyResults"></div>
   </div>
 
   <!-- SELL SECTION -->
   <div id="sellSection" style="display:none; margin-top:20px;">
-    <h2>Sell Transaction</h2>
-    <label for="sellQuantity">Enter Quantity (number of securities):</label>
-    <input type="text" id="sellQuantity" placeholder="e.g. 100">
+    <h3>Sell T-Bills</h3>
 
-    <label for="sellMarketPrice">Enter Market / Limit Price (per security):</label>
-    <input type="text" id="sellMarketPrice" placeholder="e.g. 120.50">
+    <label for="sellFaceValue">Face Value of 1 T-bill (ETB):</label>
+    <input type="number" id="sellFaceValue" placeholder="e.g. 100000" />
 
-    <button onclick="calculateFee('sell')">Calculate Sell</button>
-    <div id="sellResult"></div>
+    <label for="sellQuantity">Quantity:</label>
+    <input type="number" id="sellQuantity" placeholder="e.g. 10" />
+
+    <label for="sellMaturity">Maturity Period:</label>
+    <select id="sellMaturity">
+      <option value="28">1 Month (28 days)</option>
+      <option value="91">3 Months (91 days)</option>
+      <option value="182">6 Months (182 days)</option>
+      <option value="365">1 Year (365 days)</option>
+    </select>
+
+    <label for="sellRate">Gov Interest Rate (% per year):</label>
+    <input type="number" id="sellRate" placeholder="e.g. 6.8" step="0.01" />
+
+    <button onclick="calculate('sell')">Calculate Sell</button>
+
+    
+    <h3>Transaction Fees:</h3> 
+    <table border="1" id="sellFeeTable">
+      <thead>
+        <tr>
+          <th>Company</th>
+          <th>% Rate</th>
+          <th>Amount (ETB)</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+      <tfoot>
+        <tr>
+          <td colspan="2"><strong>Total Fee</strong></td>
+          <td id="sellTotalFee"></td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <h3>Results:</h3>
+    <div id="sellResults"></div>
   </div>
+</div>
 
-  <script>
-    function showSection(sectionId) {
-      document.getElementById("buySection").style.display = "none";
-      document.getElementById("sellSection").style.display = "none";
-      document.getElementById(sectionId).style.display = "block";
-    }
-
-const RATE = 0.00126;
-
-function calculateFee(type) {
-  const qtyId = type === "buy" ? "buyQuantity" : "sellQuantity";
-  const priceId = type === "buy" ? "buyMarketPrice" : "sellMarketPrice";
-  const resultId = type === "buy" ? "buyResult" : "sellResult";
-
-  const rawQty = document.getElementById(qtyId).value.replace(/,/g, "");
-  const rawPrice = document.getElementById(priceId).value.replace(/,/g, "");
-
-  const quantity = parseFloat(rawQty);
-  const marketPrice = parseFloat(rawPrice);
-
-  if (isNaN(quantity) || quantity <= 0) {
-    alert("Please enter a valid quantity (greater than 0).");
-    return;
-  }
-  if (isNaN(marketPrice) || marketPrice <= 0) {
-    alert("Please enter a valid market/limit price (greater than 0).");
-    return;
-  }
-
-  const tradeValue = quantity * marketPrice;
-
-  // fees
-  const feeCBE = tradeValue * 0.001;   // 1.6%
-  const feeECMA = tradeValue * 0.00005; // 0.15%
-  const feeESX = tradeValue * 0.00021;  // 0.36%
-  const csdFee = 0;                    // 0%
-
-  const fee = feeCBE + feeECMA + feeESX + csdFee;
-let total;
-if (type === "buy") {
-  total = tradeValue + fee; // buy keeps original calculation
-} else {
-  total = (tradeValue - fee) // sell subtracts fee and applies multiplier
+<script>
+function showSection(sectionId) {
+  document.getElementById("buySection").style.display = "none";
+  document.getElementById("sellSection").style.display = "none";
+  document.getElementById(sectionId).style.display = "block";
+  
 }
 
-  const resultDiv = document.getElementById(resultId);
-  resultDiv.style.display = "block";
+function calculate(type) {
+  const faceValue = parseFloat(document.getElementById(type + 'FaceValue').value);
+  const quantity = parseInt(document.getElementById(type + 'Quantity').value);
+  const days = parseInt(document.getElementById(type + 'Maturity').value);
+  const rate = parseFloat(document.getElementById(type + 'Rate').value) / 100;
 
-  resultDiv.innerHTML = `
-    <h4>${type === "buy" ? "Buy" : "Sell"} Calculation Result</h4>
-    <table class="result-table">
-      
-       <tbody>
-        <tr><td>Quantity</td><td>${quantity.toLocaleString("en-US")}</td></tr>
-        <tr><td>Market Price (per security)</td><td>${marketPrice.toLocaleString("en-US")} ETB</td></tr>
-        <tr><td>Transaction Value</td><td>${tradeValue.toLocaleString("en-US")} ETB</td></tr>
-      </tbody>
-      <table class="result-table">
-     
-      <!-- CBE CAPITAL separate table -->
-<table class="result-table">
-  <thead>
-    <tr>
-      <th>Company</th>
-      <th>Commission Fee</th>
-      <th>Amount (ETB)</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>CBE CAPITAL</td>
-      <td>0.1%</td>
-      <td>${feeCBE.toLocaleString("en-US")}</td>
-    </tr>
-  </tbody>
-</table>
+  if (isNaN(faceValue) || isNaN(quantity) || isNaN(rate)) {
+    alert("Please enter all fields (face value, quantity, rate)!");
+    return;
+  }
 
-<br>
+  // Total investment
+  const investmentAmount = faceValue * quantity;
+  
 
-<!-- Other fees table -->
-<table class="result-table">
-  <thead>
-    <tr>
-      <th>Company</th>
-      <th>% Fee</th>
-      <th>Amount (ETB)</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr><td>ECMA</td><td>0.005%</td><td>${feeECMA.toLocaleString("en-US")}</td></tr>
-    <tr><td>ESX</td><td>0.021%</td><td>${feeESX.toLocaleString("en-US")}</td></tr>
-    <tr><td>CSD</td><td>0.00%</td><td>${csdFee.toFixed(2)}</td></tr>
-    <tr>
-      <td><strong>📊 Total </strong></td>
-      <td><strong>${(RATE * 100)}%</strong></td>
+  // --- Transaction Fees ---
+  const fees = [
+    { company: "CBE CAPITAL", rate: 0.10 }, // 0.10%
+    { company: "ECMA", rate: 0.005 },        // 0.05%
+    { company: "ESX", rate: 0.021 },         // 0.21%
+    { company: "CSD", rate: 0.00 }          // 0.00%
+  ];
 
-      <td><strong>${fee.toLocaleString("en-US")}</strong></td>
-    </tr>
-  </tbody>
-</table>
 
-    <br>
+  const tbody = document.querySelector(`#${type}FeeTable tbody`);
+  tbody.innerHTML = "";
 
-    <table class="result-table">
-      <tbody>
-        <table class="result-table">
-  <tbody>
-    <tr>
-      <td>📦 ${type === "buy" ? "Total Due" : "Net Proceeds"}</td>
-      <td><strong>${total.toLocaleString("en-US")} ETB</strong></td>
-    </tr>
-  </tbody>
-</table>
+  let totalFeeAmount = 0;
+  fees.forEach(fee => {
+    const feeAmount = (investmentAmount * fee.rate) / 100;
+    totalFeeAmount += feeAmount;
+    
 
-      </tbody>
+    const row = `<tr>
+      <td>${fee.company}</td>
+      <td>${fee.rate}%</td>
+      <td>${feeAmount.toFixed(2)}</td>
+    </tr>`;
+    tbody.innerHTML += row;
+  });
+
+  document.getElementById(type + 'TotalFee').innerText = totalFeeAmount.toFixed(2);
+
+  // --- Results ---
+  const totalSend = investmentAmount + totalFeeAmount;
+  const dailyInterest = rate / 365;
+  const totalInterest = investmentAmount * dailyInterest * days;
+  const maturityValue = investmentAmount + totalInterest;
+  const netProfit = maturityValue - totalSend;
+
+  const resultsTable = `
+    <table border="1">
+      <tr><td><strong>Total Investment</strong></td><td>${investmentAmount.toFixed(2)} ETB</td></tr>
+      <tr><td><strong>Total to Send Broker</strong></td><td>${totalSend.toFixed(2)} ETB</td></tr>
+      <tr><td><strong>Maturity Value (after ${days} days)</strong></td><td>${maturityValue.toFixed(2)} ETB</td></tr>
+      <tr><td><strong>Net Profit (after fees)</strong></td><td>${netProfit.toFixed(2)} ETB</td></tr>
     </table>
   `;
+
+  document.getElementById(type + 'Results').innerHTML = resultsTable;
 }
-
-
-  </script>
+</script>
 </body>
 </html>
