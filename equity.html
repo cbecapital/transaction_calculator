@@ -16,19 +16,19 @@
 
 <div class="container"> 
 <div class="ticker">
-  <div class="ticker-label">Closing Prices:</div>
+  <div class="ticker-label">Updated on setember 30, 2025 12:00pm Closing Prices: </div>
   <div class="ticker-content">
-    <span>WGBX: 1200</span>
-    <span>GDAB: 1057</span>
-    <span>TBL182D: 4700</span>
-    <span>IBMM: 15.3973%</span>
+    <span>WGBX:ETB 1200 | Qty=50</span>
+    <span>GDAB: ETB 1057 | Qty=5</span>
+    <span>TBL182D:ETB  4700 | Qty=0</span>
+    <span>IBMM:ETB  15.3973% </span>
 
 
     <!-- duplicate for smooth infinite loop -->
-     <span>WGBX: 1200</span>
-    <span>GDAB: 1057</span>
-    <span>TBL182D: 4700</span>
-    <span>IBMM: 15.3973%</span>
+     <span>WGBX:ETB  1200 | Qty=50</span>
+    <span>GDAB:ETB 1057 | Qty=5</span>
+    <span>TBL182D:ETB 4700 | Qty=0</span>
+    <span>IBMM:ETB 15.3973% </span>
   </div>
 </div>
 
@@ -66,6 +66,21 @@ function formatNumberInput(input) {
 
     <button onclick="calculateFee('buy')">Calculate Buy</button>
     <div id="buyResult"></div>
+    <!-- INVESTMENT SECTION -->
+<div id="investmentSection" style="margin-top:20px;">
+  <h2>Investment Calculator</h2>
+  <label for="investmentAmount">Enter Anticipated Investment Amount (ETB):</label>
+  <input type="text" id="investmentAmount" placeholder="e.g. 30000" 
+         oninput="formatNumberInput(this)">
+
+  <label for="sharePrice">Enter Market Price (per share):</label>
+  <input type="text" id="sharePrice" placeholder="e.g. 1200" 
+         oninput="formatNumberInput(this)">
+
+  <button onclick="calculateShares()">Calculate Shares</button>
+  <div id="investmentResult"></div>
+</div>
+
   </div>
 
   <!-- SELL SECTION -->
@@ -128,9 +143,11 @@ if (type === "buy") {
   total = (tradeValue - fee) // sell subtracts fee and applies multiplier
 }
 
+
   const resultDiv = document.getElementById(resultId);
   resultDiv.style.display = "block";
 
+  
   resultDiv.innerHTML = `
     <h4>${type === "buy" ? "Buy" : "Sell"} Calculation Result</h4>
     <table class="result-table">
@@ -200,6 +217,146 @@ if (type === "buy") {
     </table>
   `;
 }
+function calculateShares() {
+  // read & validate
+  const rawAmount = document.getElementById("investmentAmount").value.replace(/,/g, "");
+  const rawPrice  = document.getElementById("sharePrice").value.replace(/,/g, "");
+
+  const amount = parseFloat(rawAmount);
+  const price  = parseFloat(rawPrice);
+
+  if (isNaN(amount) || amount <= 0) {
+    alert("Please enter a valid investment amount.");
+    return;
+  }
+  if (isNaN(price) || price <= 0) {
+    alert("Please enter a valid market price per share.");
+    return;
+  }
+
+  // --- integer cents for exactness ---
+  const amountCents = Math.round(amount * 100); // amount in ETB-cents
+  const priceCents  = Math.round(price  * 100); // price in ETB-cents
+
+  // Fee breakdown (exact percentages used)
+  // CBE = 1.6%  => 16 / 1000
+  // ECMA = 0.15% => 15 / 10000
+  // ESX = 0.36% => 36 / 10000
+  // totalRate = 2.11% => 211 / 10000
+  const TOTAL_RATE_NUM = 211;
+  const TOTAL_RATE_DEN = 10000;
+
+  // compute an integer "cost per share including fees" upper bound in cents:
+  // costPerShareWithFees = priceCents * (1 + totalRate) = priceCents * (TOTAL_RATE_DEN + TOTAL_RATE_NUM) / TOTAL_RATE_DEN
+  // use Math.ceil to be conservative (avoid underestimating required cents)
+  const costPerShareWithFeesCents = Math.ceil(priceCents * (TOTAL_RATE_DEN + TOTAL_RATE_NUM) / TOTAL_RATE_DEN);
+
+  // initial conservative estimate of how many whole shares can fit
+  let quantity = Math.floor(amountCents / costPerShareWithFeesCents);
+
+  // Now compute real fees for that trade and adjust down if rounding makes it exceed the amount.
+  let tradeValueCents = 0;
+  let feeCBEc = 0, feeECMAc = 0, feeESXc = 0, feeTotalC = 0, totalCostCents = 0;
+
+  while (quantity > 0) {
+    tradeValueCents = quantity * priceCents;
+
+    // compute each fee in cents (round to nearest cent)
+    feeCBEc  = Math.round(tradeValueCents * 16  / 1000);   // 1.6%
+    feeECMAc = Math.round(tradeValueCents * 15  / 10000);  // 0.15%
+    feeESXc  = Math.round(tradeValueCents * 36  / 10000);  // 0.36%
+
+    feeTotalC = feeCBEc + feeECMAc + feeESXc;
+    totalCostCents = tradeValueCents + feeTotalC;
+
+    // if this total fits in investor's cash, we are done
+    if (totalCostCents <= amountCents) break;
+
+    // else reduce one share and try again
+    quantity--;
+  }
+
+  const resultDiv = document.getElementById("investmentResult");
+  resultDiv.style.display = "block";
+
+  // helper to format cents -> "1,234.56"
+  const fmt = (cents) => (cents / 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  if (quantity === 0) {
+    // can't buy even one share after fees
+    const minNeededCents = costPerShareWithFeesCents;
+    resultDiv.innerHTML = `
+      <h4>Investment Result</h4>
+      <p><strong>Insufficient funds to buy 1 share after transaction fees.</strong></p>
+      <table class="result-table">
+        <tr><td>Your Cash</td><td>${fmt(amountCents)} ETB</td></tr>
+        <tr><td>Cost to buy 1 share (price + fees)</td><td>${fmt(minNeededCents)} ETB</td></tr>
+        <tr><td>Required Extra</td><td>${fmt(Math.max(0, minNeededCents - amountCents))} ETB</td></tr>
+      </table>
+      <p style="font-size:0.9em; color:#fff">Fees used: CBE 1.60%, ECMA 0.15%, ESX 0.36% (total 2.11%).</p>
+    `;
+    return;
+  }
+
+  const leftoverCents = amountCents - totalCostCents;
+
+  // show detailed breakdown
+  resultDiv.innerHTML = `
+  <h4>Investment Result (fees applied)</h4>
+
+<!-- Table 1: Input Summary -->
+<table class="result-table">
+  <tr><td> Anticipated Investment Amount</td><td>${fmt(amountCents)} ETB</td></tr>
+  <tr><td>Market Price / share</td><td>${fmt(priceCents)} ETB</td></tr>
+  <tr><td>Shares you can buy</td><td>${quantity.toLocaleString("en-US")}</td></tr>
+  <tr><td>Trade value (shares × price)</td><td>${fmt(tradeValueCents)} ETB</td></tr>
+</table>
+
+<br>
+
+<!-- Table 2: Fees -->
+<table class="result-table">
+  <thead>
+    <tr>
+      <th>Company</th>
+      <th> commision Fee</th>
+      <th>Amount (ETB)</th>
+    </tr>
+  </thead>
+  <tr> <td>CBE fee </td>  <td> (1.6%)</td><td>${fmt(feeCBEc)} ETB</td></tr>
+  
+  <thead>
+    <tr>
+      <th>Company</th>
+      <th>% Fee</th>
+      <th>Amount (ETB)</th>
+    </tr>
+  </thead>
+  <tr><td>ECMA fee </td> <td> (0.15%)</td><td>${fmt(feeECMAc)} ETB</td></tr>
+  <tr><td>ESX fee </td> <td>(0.36%)</td><td>${fmt(feeESXc)} ETB</td></tr>
+  <tr><td><strong>Total fees </td> <td> (2.11%)</strong></td><td><strong>${fmt(feeTotalC)} ETB</strong></td></tr>
+</table>
+
+<br>
+
+<!-- Table 3: Final Outcome -->
+
+<table class="result-table">
+   <thead>
+    <tr>
+      <th>    Summary </th>
+    </tr>
+  </thead>
+  <tr><td><strong>Total cost (trade value + fees)</strong></td><td><strong>${fmt(totalCostCents)} ETB</strong></td></tr>
+    <tr><td>Shares you can buy</td><td>${quantity.toLocaleString("en-US")}</td></tr>
+  <tr><td>Remaining Cash</td><td>${fmt(leftoverCents)} ETB</td></tr>
+</table>
+
+    <p style="font-size:0.9em; color:#fff">Calculation notes: fee amounts are rounded to the nearest cent; we used exact integer-cent math and adjusted quantity so <strong>total cost &le; your cash</strong>.</p>
+  `;
+}
+
+
 
 
   </script>

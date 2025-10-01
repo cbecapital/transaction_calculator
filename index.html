@@ -1,27 +1,173 @@
 <!DOCTYPE html>
+
 <html lang="en"> 
 <head> 
   <meta charset="UTF-8"> 
   <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
   <title>Transaction Fee Calculator</title> 
   <link rel="stylesheet" href="index.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+    .container {
+      text-align: center;
+      margin-top: 50px;
+    }
+    .btn {
+      padding: 10px 20px;
+      margin: 10px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 6px;
+      border: none;
+      background-color: #004080;
+      color: white;
+      transition: background 0.3s;
+    }
+    .btn:hover {
+      background-color: #0066cc;
+    }
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0; top: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.7);
+    }
+    .modal-content {
+      background: #fff;
+      margin: 5% auto;
+      padding: 30px;
+      border-radius: 12px;
+      width: 80%;
+      max-width: 900px;
+      color: #000;
+      max-height: 80%;
+      overflow-y: auto;
+    }
+    .close {
+      float: right;
+      font-size: 28px;
+      cursor: pointer;
+      font-weight: bold;
+      color: #444;
+    }
+    .close:hover {
+      color: red;
+    }
+    .terms-text h2 {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    .terms-text h3 {
+      margin-top: 20px;
+      margin-bottom: 10px;
+      font-size: 18px;
+      color: #004080;
+    }
+    .terms-text p {
+      margin-bottom: 15px;
+    }
+    .terms-text ol {
+      padding-left: 20px;
+    }
+    .terms-text ol li {
+      margin-bottom: 15px;
+    }
+    .terms-text ul {
+      padding-left: 20px;
+      margin-top: 8px;
+    }
+  </style>
 </head> 
 <body> 
+
 <video autoplay muted loop id="bg-video">
   <source src="cbe-logo-2.mp4" type="video/mp4">
 </video>
 
-</head> 
-<body> 
- 
+<div class="container"> 
+  <h1>Welcome to CBE Capital Transaction Calculator</h1>
 
+<button class="btn" onclick="location.href='equity.html'">Equity Main & Growth Market</button> <button class="btn" onclick="location.href='otc.html'">OTC / Unlisted Market</button> <button class="btn" onclick="location.href='treasury.html'">GoE Treasury Bills</button> <button class="btn" onclick="location.href='IR.html'">Interest Rate</button> <button class="btn" onclick="openTerms()">📜 Terms & Conditions</button>
 
-  <div class="container"> 
-    <h1>Welcome to CBE Capital Transaction Calculator</h1>
+</div> 
 
-<button class="btn" onclick="location.href='equity.html'">Equity Main & Growth Market</button>
-    <button class="btn" onclick="location.href='otc.html'">OTC / Unlisted Market</button>
-    <button class="btn" onclick="location.href='treasury.html'">GoE Treasury Bills</button>
-  </div> 
+<!-- Modal -->
+
+<div id="termsModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeTerms()">&times;</span>
+    <div class="terms-text">
+      <h2>Terms and Conditions / Disclaimer</h2>
+      <p><strong>Welcome and Transparency Notice</strong><br>
+      This calculator has been designed to support you as an investor, client, or prospective client. Its purpose is to provide clarity and transparency, ensuring you can understand how your transaction values are calculated before any commitment is made. Some of your interaction data may be recorded to improve your experience, strengthen transparency, and help us serve you more effectively. This is not for marketing, but for building trust, accountability, and operational efficiency.</p>
+
+```
+  <h3>Terms</h3>
+  <ol>
+    <li><strong>Accuracy of Market Prices</strong><br>
+      The prices displayed are indicative only. They may not always reflect the most recent data or actual live market conditions. For your protection, you are strongly advised to confirm the latest market prices by contacting the Ethiopian Securities Exchange or calling <strong>6848</strong> directly before relying on any figure presented here.
+    </li>
+    <li><strong>Commitment to Transparency</strong><br>
+      This tool exists not only for your convenience but also as part of our institutional commitment to transparency. By sharing fee calculations, cost breakdowns, and potential outcomes with you in advance, we aim to eliminate hidden charges, build confidence, and ensure fairness in your transactions.
+    </li>
+    <li><strong>Data Recording for Your Benefit</strong><br>
+      In order to enhance your user experience, interaction data may be recorded. This allows us to improve accuracy, adapt the calculator to real use cases, and ensure that the services offered remain client-centered and effective. The purpose of such data collection is exclusively to serve you better.
+    </li>
+    <li><strong>System Updates and Timing Limitations</strong><br>
+      Market data can change at any time, sometimes without immediate system updates. Delays may occur due to technical adjustments or exchange updates. The results generated by this tool should therefore be treated as indicative and not final.
+    </li>
+    <li><strong>Educational and Illustrative Use Only</strong><br>
+      This calculator is provided for educational and illustrative purposes. It does not constitute financial advice, investment advice, or legal advice. It is intended as a guide to help you understand approximate costs and fees in advance of an actual trade.
+    </li>
+    <li><strong>No Liability for Errors or Omissions</strong><br>
+      Although every effort is made to ensure the correctness of calculations, we cannot guarantee the absolute accuracy of the displayed information. <strong>CBE Capital assumes no liability for any direct or indirect losses arising from reliance on this calculator.</strong>
+    </li>
+    <li><strong>Independent Verification Strongly Recommended</strong><br>
+      Users are encouraged to verify all outputs independently. Consulting a licensed financial advisor or official trading desk is recommended before making any investment decision.
+    </li>
+    <li><strong>Shared Responsibility and Informed Decisions</strong><br>
+      By using this tool, you acknowledge that investment decisions carry risk. The ultimate responsibility for choosing to invest, buy, or sell rests with you, the investor. The calculator is designed to inform, not to decide on your behalf.
+    </li>
+    <li><strong>Definitions and Clarifications</strong>
+      <ul>
+        <li><em>Investment Amount</em>: The cash you intend to allocate toward a purchase.</li>
+        <li><em>Market Price</em>: The listed or indicative value per share or unit of investment.</li>
+        <li><em>Shares You Can Buy</em>: The number of units you could theoretically purchase based on available funds and estimated fees.</li>
+        <li><em>Transaction Fees</em>: Charges applied by CBE Capital, the Exchange, and regulatory bodies.</li>
+        <li><em>Total Cost</em>: The combination of trade value and associated fees.</li>
+      </ul>
+    </li>
+    <li><strong>Acceptance of Terms</strong><br>
+      By using this calculator, you confirm that you understand these Terms and Conditions, that this tool is for transparency and educational purposes, and that you will verify all information before relying on it in any financial transaction.
+    </li>
+  </ol>
+
+  <p><strong>Final Note</strong><br>
+  This calculator is meant to serve both you and us — for you, it provides foresight and confidence; for us, it builds transparency and accountability in every client interaction.</p>
+</div>
+```
+
+  </div>
+</div>
+
+<script>
+function openTerms() {
+  document.getElementById("termsModal").style.display = "block";
+}
+function closeTerms() {
+  document.getElementById("termsModal").style.display = "none";
+}
+window.onclick = function(event) {
+  if (event.target == document.getElementById("termsModal")) {
+    closeTerms();
+  }
+}
+</script>
+
 </body> 
 </html>
