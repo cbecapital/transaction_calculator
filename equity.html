@@ -16,7 +16,7 @@
 
 <div class="container"> 
 <div class="ticker">
-  <div class="ticker-label">Updated on setember 30, 2025 12:00pm Closing Prices: </div>
+  <div class="ticker-label">Updated on October 2, 2025 12:00pm Closing Prices: </div>
   <div class="ticker-content">
     <span>WGBX:ETB 1200 | Qty=50</span>
     <span>GDAB: ETB 1057 | Qty=5</span>
@@ -56,11 +56,11 @@ function formatNumberInput(input) {
   <!-- BUY SECTION -->
   <div id="buySection" style="display:none; margin-top:20px;">
     <h2>Buy Transaction</h2>
-    <label for="buyQuantity">Enter Quantity (number of securities):</label>
+    <label for="buyQuantity">Enter Quantity (number of share):</label>
 <input type="text" id="buyQuantity" placeholder="e.g. 100" 
        oninput="formatNumberInput(this)">
 
-    <label for="buyMarketPrice"> Price (per security):</label>
+    <label for="buyMarketPrice"> Price (per share):</label>
 <input type="text" id="buyMarketPrice" placeholder="e.g. 120.50" 
        oninput="formatNumberInput(this)">
 
@@ -73,11 +73,11 @@ function formatNumberInput(input) {
   <input type="text" id="investmentAmount" placeholder="e.g. 30000" 
          oninput="formatNumberInput(this)">
 
-  <label for="sharePrice">Enter Market Price (per share):</label>
+  <label for="sharePrice">Enter Price (per share):</label>
   <input type="text" id="sharePrice" placeholder="e.g. 1200" 
          oninput="formatNumberInput(this)">
 
-  <button onclick="calculateShares()">Calculate Shares</button>
+  <button onclick="calculateShares()">Calculate Share amount</button>
   <div id="investmentResult"></div>
 </div>
 
@@ -86,11 +86,11 @@ function formatNumberInput(input) {
   <!-- SELL SECTION -->
   <div id="sellSection" style="display:none; margin-top:20px;">
     <h2>Sell Transaction</h2>
-    <label for="sellQuantity">Enter Quantity (number of securities):</label>
+    <label for="sellQuantity">Enter Quantity (number of Share):</label>
 <input type="text" id="sellQuantity" placeholder="e.g. 100" 
        oninput="formatNumberInput(this)">
 
-    <label for="sellMarketPrice">Enter Market / Limit Price (per security):</label>
+    <label for="sellMarketPrice">Enter Market / Limit Price (per share):</label>
 <input type="text" id="sellMarketPrice" placeholder="e.g. 120.50" 
        oninput="formatNumberInput(this)">
        
@@ -135,6 +135,7 @@ function calculateFee(type) {
   const feeESX = tradeValue * 0.0036;  // 0.36%
   const csdFee = 0;                    // 0%
 
+  const fee2nd = feeECMA + feeESX + csdFee;
   const fee = feeCBE + feeECMA + feeESX + csdFee;
 let total;
 if (type === "buy") {
@@ -154,7 +155,7 @@ if (type === "buy") {
       
        <tbody>
         <tr><td>Quantity</td><td>${quantity.toLocaleString("en-US")}</td></tr>
-        <tr><td>Market Price (per security)</td><td>${marketPrice.toLocaleString("en-US")} ETB</td></tr>
+        <tr><td>Price (per share)</td><td>${marketPrice.toLocaleString("en-US")} ETB</td></tr>
         <tr><td>Transaction Value</td><td>${tradeValue.toLocaleString("en-US")} ETB</td></tr>
       </tbody>
       <table class="result-table">
@@ -164,7 +165,7 @@ if (type === "buy") {
   <thead>
     <tr>
       <th>Company</th>
-      <th>Commission Fee</th>
+      <th>Commission </th>
       <th>Amount (ETB)</th>
     </tr>
   </thead>
@@ -184,7 +185,7 @@ if (type === "buy") {
   <thead>
     <tr>
       <th>Company</th>
-      <th>% Fee</th>
+      <th> Fee</th>
       <th>Amount (ETB)</th>
     </tr>
   </thead>
@@ -192,9 +193,17 @@ if (type === "buy") {
     <tr><td>ECMA</td><td>0.15%</td><td>${feeECMA.toLocaleString("en-US")}</td></tr>
     <tr><td>ESX</td><td>0.36%</td><td>${feeESX.toLocaleString("en-US")}</td></tr>
     <tr><td>CSD</td><td>0.00%</td><td>${csdFee.toFixed(2)}</td></tr>
+    
     <tr>
-      <td><strong>📊 Total </strong></td>
-      <td><strong>${(RATE*100).toFixed(2)}%</strong></td>
+      <td><strong>📊 Total Fees </strong></td>
+      <td><strong>0.51%</strong></td>
+      <td><strong>${fee2nd.toLocaleString("en-US")}</strong></td>
+    </tr>
+
+
+    <tr>
+      <td><strong>📊 Total Commission + Fees </strong></td>
+      <td><strong>${(RATE*100).toFixed(2)}% </strong></td>
       <td><strong>${fee.toLocaleString("en-US")}</strong></td>
     </tr>
   </tbody>
@@ -207,7 +216,7 @@ if (type === "buy") {
         <table class="result-table">
   <tbody>
     <tr>
-      <td>📦 ${type === "buy" ? "Total Due" : "Net Proceeds"}</td>
+      <td>📦 ${type === "buy" ? "Total Amount Due" : "Net Proceeds"}</td>
       <td><strong>${total.toLocaleString("en-US")} ETB</strong></td>
     </tr>
   </tbody>
@@ -266,6 +275,8 @@ function calculateShares() {
     feeECMAc = Math.round(tradeValueCents * 15  / 10000);  // 0.15%
     feeESXc  = Math.round(tradeValueCents * 36  / 10000);  // 0.36%
 
+    fee2nd =  feeECMAc + feeESXc;
+
     feeTotalC = feeCBEc + feeECMAc + feeESXc;
     totalCostCents = tradeValueCents + feeTotalC;
 
@@ -307,7 +318,7 @@ function calculateShares() {
 <!-- Table 1: Input Summary -->
 <table class="result-table">
   <tr><td> Anticipated Investment Amount</td><td>${fmt(amountCents)} ETB</td></tr>
-  <tr><td>Market Price / share</td><td>${fmt(priceCents)} ETB</td></tr>
+  <tr><td> Price </td><td>${fmt(priceCents)} ETB</td></tr>
   <tr><td>Shares you can buy</td><td>${quantity.toLocaleString("en-US")}</td></tr>
   <tr><td>Trade value (shares × price)</td><td>${fmt(tradeValueCents)} ETB</td></tr>
 </table>
@@ -319,7 +330,7 @@ function calculateShares() {
   <thead>
     <tr>
       <th>Company</th>
-      <th> commision Fee</th>
+      <th> commision </th>
       <th>Amount (ETB)</th>
     </tr>
   </thead>
@@ -328,13 +339,20 @@ function calculateShares() {
   <thead>
     <tr>
       <th>Company</th>
-      <th>% Fee</th>
+      <th> Fee</th>
       <th>Amount (ETB)</th>
     </tr>
   </thead>
   <tr><td>ECMA fee </td> <td> (0.15%)</td><td>${fmt(feeECMAc)} ETB</td></tr>
   <tr><td>ESX fee </td> <td>(0.36%)</td><td>${fmt(feeESXc)} ETB</td></tr>
-  <tr><td><strong>Total fees </td> <td> (2.11%)</strong></td><td><strong>${fmt(feeTotalC)} ETB</strong></td></tr>
+   
+  <tr>
+      <td><strong>📊 Total Fees </strong></td>
+      <td><strong>0.51%</strong></td>
+      <td><strong>${fee2nd.toLocaleString("en-US")}</strong></td>
+    </tr>
+
+  <tr><td><strong>Total Commision + fees </td> <td> (2.11%)</strong></td><td><strong>${fmt(feeTotalC)} ETB</strong></td></tr>
 </table>
 
 <br>

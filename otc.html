@@ -15,7 +15,7 @@
 
 <div class="container"> 
 <div class="ticker">
-  <div class="ticker-label">Closing Prices:</div>
+  <div class="ticker-label">Updated on October 3, 2025 12:00pm Closing Prices: </div>
   <div class="ticker-content">
     <span>WGBX: 1991</span>
     <span>GDAB: 1057</span>
@@ -47,10 +47,10 @@
   <!-- BUY SECTION -->
   <div id="buySection" style="display:none; margin-top:20px;">
     <h2>Buy Transaction</h2>
-    <label for="buyQuantity">Enter Quantity (number of securities):</label>
+    <label for="buyQuantity">Enter Quantity (number of share):</label>
     <input type="text" id="buyQuantity" placeholder="e.g. 100">
 
-    <label for="buyMarketPrice">Enter Price (per security):</label>
+    <label for="buyMarketPrice">Enter Price (per share):</label>
     <input type="text" id="buyMarketPrice" placeholder="e.g. 120.50">
 
     <button onclick="calculateFee('buy')">Calculate Buy</button>
@@ -60,10 +60,10 @@
   <!-- SELL SECTION -->
   <div id="sellSection" style="display:none; margin-top:20px;">
     <h2>Sell Transaction</h2>
-    <label for="sellQuantity">Enter Quantity (number of securities):</label>
+    <label for="sellQuantity">Enter Quantity (number of share):</label>
     <input type="text" id="sellQuantity" placeholder="e.g. 100">
 
-    <label for="sellMarketPrice">Enter Market / Limit Price (per security):</label>
+    <label for="sellMarketPrice">Enter Price (per share):</label>
     <input type="text" id="sellMarketPrice" placeholder="e.g. 120.50">
 
     <button onclick="calculateFee('sell')">Calculate Sell</button>
@@ -108,6 +108,8 @@ function calculateFee(type) {
   const csdFee = 0;                    // 0%
 
   const fee = feeCBE + feeECMA + feeESX + csdFee;
+    const fee2nd  =  feeECMA + feeESX + csdFee;
+
 let total;
 if (type === "buy") {
   total = tradeValue + fee; // buy keeps original calculation
@@ -124,7 +126,7 @@ if (type === "buy") {
       
        <tbody>
         <tr><td>Quantity</td><td>${quantity.toLocaleString("en-US")}</td></tr>
-        <tr><td>Market Price (per security)</td><td>${marketPrice.toLocaleString("en-US")} ETB</td></tr>
+        <tr><td> Price (per share)</td><td>${marketPrice.toLocaleString("en-US")} ETB</td></tr>
         <tr><td>Transaction Value</td><td>${tradeValue.toLocaleString("en-US")} ETB</td></tr>
       </tbody>
       <table class="result-table">
@@ -134,7 +136,7 @@ if (type === "buy") {
   <thead>
     <tr>
       <th>Company</th>
-      <th>Commission Fee</th>
+      <th>Commission </th>
       <th>Amount (ETB)</th>
     </tr>
   </thead>
@@ -154,7 +156,7 @@ if (type === "buy") {
   <thead>
     <tr>
       <th>Company</th>
-      <th>% Fee</th>
+      <th> Fee</th>
       <th>Amount (ETB)</th>
     </tr>
   </thead>
@@ -163,7 +165,12 @@ if (type === "buy") {
     <tr><td>ESX</td><td>0.5%</td><td>${feeESX.toLocaleString("en-US")}</td></tr>
     <tr><td>CSD</td><td>0.00%</td><td>${csdFee.toFixed(2)}</td></tr>
     <tr>
-      <td><strong>📊 Total </strong></td>
+      <td><strong>📊 Total Fees </strong></td>
+      <td><strong>0.51%</strong></td>
+      <td><strong>${fee2nd.toLocaleString("en-US")}</strong></td>
+      </tr>
+    <tr>
+      <td><strong>📊 Total Commission + Fee </strong></td>
       <td><strong>${(RATE*100).toFixed(2)}%</strong></td>
       <td><strong>${fee.toLocaleString("en-US")}</strong></td>
     </tr>

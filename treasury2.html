@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Treasury Bill Auction Calculator</title>
+  <style>
+    body {
+      font-family: "Poppins", sans-serif;
+      background: #f5f7fb;
+      padding: 30px;
+      color: #222;
+    }
+    h1 { text-align: center; color: #004aad; }
+    .btn {
+      background: #004aad;
+      color: #fff;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+      margin-top: 10px;
+    }
+    .btn:hover { background: #0066d9; }
+    .section {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+      max-width: 700px;
+      margin: 20px auto;
+    }
+    label { display: block; margin-top: 10px; font-weight: 600; }
+    input, select {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: left;
+    }
+    th { background: #f0f0f0; }
+    .result-summary {
+      background: #f9f9f9;
+      padding: 15px;
+      margin-top: 20px;
+      border-left: 4px solid #004aad;
+      border-radius: 6px;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+    <button class="home-btn" onclick="location.href='index.html'">Home</button>
+
+<h1>🇪🇹 Treasury Bill Auction Calculator</h1>
+
+<div class="section">
+  <h2>Primary Market (Auction Bidding)</h2>
+  <p>Estimate how much you must pay today when bidding for Treasury Bills in the National Bank auction.</p>
+
+  <label for="tbillType">Which T-Bill are you bidding for?</label>
+  <select id="tbillType">
+    <option value="28">28 Days</option>
+    <option value="91">91 Days</option>
+    <option value="182">182 Days</option>
+    <option value="364">364 Days</option>
+  </select>
+
+  <label for="quantity">How many T-Bills are you buying?</label>
+  <input type="number" id="quantity" placeholder="e.g. 10">
+
+  <label for="yield">Your bid yield (% per year):</label>
+  <input type="number" id="yield" placeholder="e.g. 12.5" step="0.01">
+
+  <label for="bidDate">Auction Date:</label>
+  <input type="date" id="bidDate">
+
+  <button class="btn" onclick="calculateAuction()">Calculate</button>
+
+  <div id="result"></div>
+</div>
+
+<script>
+function calculateAuction() {
+  const days = parseInt(document.getElementById("tbillType").value);
+  const qty = parseInt(document.getElementById("quantity").value);
+  const yieldRate = parseFloat(document.getElementById("yield").value);
+  const bidDateValue = document.getElementById("bidDate").value;
+
+  if (!days || !qty || !yieldRate || !bidDateValue) {
+    alert("Please fill in all fields correctly.");
+    return;
+  }
+
+  const bidDate = new Date(bidDateValue);
+  const maturityDate = new Date(bidDate);
+  maturityDate.setDate(bidDate.getDate() + days);
+
+  const faceValuePerTBill = 5000;
+  const totalFaceValue = qty * faceValuePerTBill;
+
+  // Convert annual yield to discount price
+  const pricePerTBill = faceValuePerTBill / (1 + (yieldRate / 100) * (days / 365));
+  const totalPayment = pricePerTBill * qty;
+
+  const discount = totalFaceValue - totalPayment;
+
+  // Fees
+  const fees = [
+    { company: "CBE CAPITAL", rate: 0.10 },
+    { company: "ECMA", rate: 0.005 },
+    { company: "ESX", rate: 0.021 },
+    { company: "CSD", rate: 0.00 }
+  ];
+  let totalFeeAmount = 0;
+  let feeRows = "";
+  fees.forEach(fee => {
+    const feeAmount = (totalPayment * fee.rate) / 100;
+    totalFeeAmount += feeAmount;
+    feeRows += `<tr><td>${fee.company}</td><td>${fee.rate.toFixed(3)}%</td><td>${feeAmount.toFixed(2)} ETB</td></tr>`;
+  });
+
+  const totalToSend = totalPayment + totalFeeAmount;
+  const netProfit = totalFaceValue - totalToSend;
+
+  const resultHTML = `
+    <h3>Calculation Summary</h3>
+    <table>
+      <tr><th>Description</th><th>Amount / Value</th><th>Notes</th></tr>
+      <tr><td>T-Bill Type</td><td>${days} days</td><td>Selected maturity</td></tr>
+      <tr><td>Quantity</td><td>${qty}</td><td>Each = 5,000 ETB face value</td></tr>
+      <tr><td>Bid Yield</td><td>${yieldRate.toFixed(2)}%</td><td>Annualized</td></tr>
+      <tr><td>Total You Pay Today</td><td>${totalPayment.toFixed(2)} ETB</td><td>Before fees</td></tr>
+      <tr><td>Total Face Value</td><td>${totalFaceValue.toFixed(2)} ETB</td><td>At maturity</td></tr>
+      <tr><td>Gross Profit</td><td>${discount.toFixed(2)} ETB</td><td>Before fees</td></tr>
+      <tr><td>Maturity Date</td><td>${maturityDate.toDateString()}</td><td>Expected redemption</td></tr>
+    </table>
+
+    <h3>Transaction Fees</h3>
+    <table>
+      <tr><th>Company</th><th>Rate</th><th>Fee (ETB)</th></tr>
+      ${feeRows}
+      <tr><td><strong>Total Fees</strong></td><td colspan="2"><strong>${totalFeeAmount.toFixed(2)} ETB</strong></td></tr>
+      <tr><td><strong>Total to Send Broker</strong></td><td colspan="2"><strong>${totalToSend.toFixed(2)} ETB</strong></td></tr>
+    </table>
+
+    <div class="result-summary">
+      <h3>Summary Explanation</h3>
+      <p>
+        You are bidding for <strong>${qty}</strong> T-Bill(s) of <strong>${days}-day</strong> maturity 
+        at an annual yield of <strong>${yieldRate.toFixed(2)}%</strong>.
+        Each T-Bill represents a face value of <strong>5,000 ETB</strong>, giving a total maturity value of 
+        <strong>${totalFaceValue.toLocaleString("en-US")} ETB</strong>.
+        <br><br>
+        With your bid yield, you will pay <strong>${totalPayment.toLocaleString("en-US")} ETB</strong> today 
+        (before fees). Including all transaction charges of <strong>${totalFeeAmount.toFixed(2)} ETB</strong>, 
+        you will send a total of <strong>${totalToSend.toLocaleString("en-US")} ETB</strong> to your broker.
+        <br><br>
+        On <strong>${maturityDate.toDateString()}</strong>, you will receive 
+        <strong>${totalFaceValue.toLocaleString("en-US")} ETB</strong> from the National Bank.
+        Your net profit after all fees will be approximately 
+        <strong>${netProfit.toLocaleString("en-US")} ETB</strong>.
+      </p>
+    </div>
+  `;
+
+  document.getElementById("result").innerHTML = resultHTML;
+}
+</script>
+
+</body>
+</html>
