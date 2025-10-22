@@ -217,10 +217,18 @@ generateCalendar(currentDate);
 
 
   <div class="button-row">
-    <button class="btn" onclick="showSection('buySection')">Buy T-Bills</button>
-    <button class="btn" onclick="showSection('sellSection')">Sell T-Bills</button>
-  </div>
+<button class="btn" onclick="location.href='tbills.html'"> To bid at primary market </button> 
 
+    <button class="btn" onclick="location.href='buy.html'"> calculate buy the amount of expected amount</button> 
+    <button class="btn" onclick="showSecondary()">Secondary Market</button>
+
+    <button class="btn" onclick="location.href='sell2again.html'">sell with graph Treasury Bills by yeild</button> 
+  
+</div>
+<div class="section" id="secondary-section" style="display:none;">
+    <h2>Secondary Market</h2>
+    <p>💡 The secondary market calculator is coming soon. Stay tuned!</p>
+  </div>
   <!-- BUY SECTION -->
   <div id="buySection" style="display:none; margin-top:20px;">
     <h3>Buy T-Bills</h3>

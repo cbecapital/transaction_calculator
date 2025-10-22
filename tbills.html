@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Treasury Bill Auction Calculator</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
     body {
       font-family: "Poppins", sans-serif;
@@ -27,7 +28,7 @@
       padding: 20px;
       border-radius: 12px;
       box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-      max-width: 700px;
+      max-width: 800px;
       margin: 20px auto;
     }
     label { display: block; margin-top: 10px; font-weight: 600; }
@@ -42,6 +43,7 @@
       width: 100%;
       border-collapse: collapse;
       margin-top: 15px;
+      font-size: 14px;
     }
     th, td {
       border: 1px solid #ccc;
@@ -57,28 +59,30 @@
       border-radius: 6px;
       line-height: 1.6;
     }
-
-    /* New section for market buttons */
     .market-buttons {
       display: flex;
       justify-content: center;
       gap: 15px;
       margin-bottom: 20px;
     }
+    .chart-container {
+      position: relative;
+      height: 350px;
+      width: 100%;
+      margin-top: 25px;
+    }
   </style>
 </head>
 <body>
   <button class="home-btn" onclick="location.href='index.html'">Home</button>
+<button class="btn" onclick="location.href='treasury.html'"> Back</button> 
 
   <h1>🇪🇹 Treasury Bill Auction Calculator</h1>
 
-  <!-- 🔹 Market Buttons -->
   <div class="market-buttons">
     <button class="btn" onclick="showPrimary()">Primary Market</button>
-    <button class="btn" onclick="showSecondary()">Secondary Market</button>
   </div>
 
-  <!-- 🔹 Primary Market Section (existing content) -->
   <div class="section" id="primary-section">
     <h2>Primary Market (Auction Bidding)</h2>
     <p>Estimate how much you must pay today when bidding for Treasury Bills in the National Bank auction.</p>
@@ -103,9 +107,15 @@
     <button class="btn" onclick="calculateAuction()">Calculate</button>
 
     <div id="result"></div>
+
+    <!-- Chart + Table -->
+    <div class="chart-container">
+      <canvas id="tBillChart"></canvas>
+    </div>
+
+    <div id="daily-table-container"></div>
   </div>
 
-  <!-- 🔹 Secondary Market Placeholder -->
   <div class="section" id="secondary-section" style="display:none;">
     <h2>Secondary Market</h2>
     <p>💡 The secondary market calculator is coming soon. Stay tuned!</p>
@@ -121,6 +131,8 @@
       document.getElementById("primary-section").style.display = "none";
       document.getElementById("secondary-section").style.display = "block";
     }
+
+    let chartInstance = null;
 
     function calculateAuction() {
       const days = parseInt(document.getElementById("tbillType").value);
@@ -139,26 +151,17 @@
 
       const faceValuePerTBill = 5000;
       const totalFaceValue = qty * faceValuePerTBill;
-
       const pricePerTBill = faceValuePerTBill / (1 + (yieldRate / 100) * (days / 365));
       const totalPayment = pricePerTBill * qty;
-
       const discount = totalFaceValue - totalPayment;
 
-      const fees = [
-        { company: "CBE CAPITAL", rate: 0.10 },
-      ];
-      let totalFeeAmount = 0;
-      let feeRows = "";
-      fees.forEach(fee => {
-        const feeAmount = (totalPayment * fee.rate) / 100;
-        totalFeeAmount += feeAmount;
-        feeRows += `<tr><td>${fee.company}</td><td>${fee.rate.toFixed(3)}%</td><td>${feeAmount.toFixed(2)} ETB</td></tr>`;
-      });
-
+      // Fee
+      const feeRate = 0.10; // 0.1%
+      const totalFeeAmount = (totalPayment * feeRate) / 100;
       const totalToSend = totalPayment + totalFeeAmount;
       const netProfit = totalFaceValue - totalToSend;
 
+      // --- result summary ---
       const resultHTML = `
         <h3>Calculation Summary</h3>
         <table>
@@ -170,37 +173,85 @@
           <tr><td>Total Face Value</td><td>${totalFaceValue.toFixed(2)} ETB</td><td>At maturity</td></tr>
           <tr><td>Gross Profit</td><td>${discount.toFixed(2)} ETB</td><td>Before fees</td></tr>
           <tr><td>Maturity Date</td><td>${maturityDate.toDateString()}</td><td>Expected redemption</td></tr>
+          <tr><td>CBE Capital Fee (0.1%)</td><td>${totalFeeAmount.toFixed(2)} ETB</td><td>Commission</td></tr>
+          <tr><td><strong>Total to Send</strong></td><td><strong>${totalToSend.toFixed(2)} ETB</strong></td><td>Including fees</td></tr>
+          <tr><td><strong>Net Profit</strong></td><td><strong>${netProfit.toFixed(2)} ETB</strong></td><td>After fees</td></tr>
         </table>
-
-        <h3>Transaction Fees</h3>
-        <table>
-          <tr><th>Company</th><th>Rate</th><th>Fee (ETB)</th></tr>
-          ${feeRows}
-          <tr><td><strong>Total Fees</strong></td><td colspan="2"><strong>${totalFeeAmount.toFixed(2)} ETB</strong></td></tr>
-          <tr><td><strong>Total to Send Broker</strong></td><td colspan="2"><strong>${totalToSend.toFixed(2)} ETB</strong></td></tr>
-        </table>
-
-        <div class="result-summary">
-          <h3>Summary Explanation</h3>
-          <p>
-            You are bidding for <strong>${qty}</strong> T-Bill(s) of <strong>${days}-day</strong> maturity 
-            at an annual yield of <strong>${yieldRate.toFixed(2)}%</strong>.
-            Each T-Bill represents a face value of <strong>5,000 ETB</strong>, giving a total maturity value of 
-            <strong>${totalFaceValue.toLocaleString("en-US")} ETB</strong>.
-            <br><br>
-            With your bid yield, you will pay <strong>${totalPayment.toLocaleString("en-US")} ETB</strong> today 
-            (before fees). Including all transaction charges of <strong>${totalFeeAmount.toFixed(2)} ETB</strong>, 
-            you will send a total of <strong>${totalToSend.toLocaleString("en-US")} ETB</strong> to your broker.
-            <br><br>
-            On <strong>${maturityDate.toDateString()}</strong>, you will receive 
-            <strong>${totalFaceValue.toLocaleString("en-US")} ETB</strong> from the National Bank.
-            Your net profit after all fees will be approximately 
-            <strong>${netProfit.toLocaleString("en-US")} ETB</strong>.
-          </p>
-        </div>
       `;
-
       document.getElementById("result").innerHTML = resultHTML;
+
+      // --- chart + table data ---
+      const labels = [];
+      const values = [];
+      const yields = [];
+      const tableRows = [];
+      const priceStart = pricePerTBill;
+      const priceEnd = faceValuePerTBill;
+
+      for (let d = 0; d <= days; d++) {
+        const date = new Date(bidDate);
+        date.setDate(bidDate.getDate() + d);
+        const dateStr = date.toISOString().slice(0,10);
+
+        const valuePerBill = priceStart + (priceEnd - priceStart) * (d / days);
+        const totalVal = valuePerBill * qty;
+        const yieldRem = yieldRate * (1 - d / days);
+
+        labels.push(dateStr);
+        values.push(totalVal);
+        yields.push(yieldRem);
+
+        tableRows.push(`<tr>
+          <td>${d}</td>
+          <td>${dateStr}</td>
+          <td>${totalVal.toFixed(2)}</td>
+          <td>${yieldRem.toFixed(2)}%</td>
+        </tr>`);
+      }
+
+      // --- Chart ---
+      const ctx = document.getElementById("tBillChart").getContext("2d");
+      if (chartInstance) chartInstance.destroy();
+      chartInstance = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: "Total Value (ETB)",
+              data: values,
+              borderColor: "#004aad",
+              backgroundColor: "rgba(0,74,173,0.1)",
+              tension: 0.3,
+              fill: true,
+              yAxisID: "y",
+            },
+            {
+              label: "Yield Remaining (%)",
+              data: yields,
+              borderColor: "#f39c12",
+              tension: 0.3,
+              yAxisID: "y1",
+            }
+          ]
+        },
+        options: {
+          scales: {
+            y: { title: { display: true, text: "Value (ETB)" }, beginAtZero: false },
+            y1: { position: "right", title: { display: true, text: "Yield (%)" }, beginAtZero: true }
+          },
+          plugins: { legend: { position: "top" } }
+        }
+      });
+
+      // --- Daily Table ---
+      document.getElementById("daily-table-container").innerHTML = `
+        <h3>📊 Daily Breakdown</h3>
+        <table>
+          <tr><th>Day</th><th>Date</th><th>Total Value (ETB)</th><th>Yield Remaining (%)</th></tr>
+          ${tableRows.join("")}
+        </table>
+      `;
     }
   </script>
 </body>
