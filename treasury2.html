@@ -57,126 +57,151 @@
       border-radius: 6px;
       line-height: 1.6;
     }
+
+    /* New section for market buttons */
+    .market-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
   </style>
 </head>
 <body>
-    <button class="home-btn" onclick="location.href='index.html'">Home</button>
+  <button class="home-btn" onclick="location.href='index.html'">Home</button>
 
-<h1>🇪🇹 Treasury Bill Auction Calculator</h1>
+  <h1>🇪🇹 Treasury Bill Auction Calculator</h1>
 
-<div class="section">
-  <h2>Primary Market (Auction Bidding)</h2>
-  <p>Estimate how much you must pay today when bidding for Treasury Bills in the National Bank auction.</p>
+  <!-- 🔹 Market Buttons -->
+  <div class="market-buttons">
+    <button class="btn" onclick="showPrimary()">Primary Market</button>
+    <button class="btn" onclick="showSecondary()">Secondary Market</button>
+  </div>
 
-  <label for="tbillType">Which T-Bill are you bidding for?</label>
-  <select id="tbillType">
-    <option value="28">28 Days</option>
-    <option value="91">91 Days</option>
-    <option value="182">182 Days</option>
-    <option value="364">364 Days</option>
-  </select>
+  <!-- 🔹 Primary Market Section (existing content) -->
+  <div class="section" id="primary-section">
+    <h2>Primary Market (Auction Bidding)</h2>
+    <p>Estimate how much you must pay today when bidding for Treasury Bills in the National Bank auction.</p>
 
-  <label for="quantity">How many T-Bills are you buying?</label>
-  <input type="number" id="quantity" placeholder="e.g. 10">
+    <label for="tbillType">Which T-Bill are you bidding for?</label>
+    <select id="tbillType">
+      <option value="28">28 Days</option>
+      <option value="91">91 Days</option>
+      <option value="182">182 Days</option>
+      <option value="364">364 Days</option>
+    </select>
 
-  <label for="yield">Your bid yield (% per year):</label>
-  <input type="number" id="yield" placeholder="e.g. 12.5" step="0.01">
+    <label for="quantity">How many T-Bills are you buying?</label>
+    <input type="number" id="quantity" placeholder="e.g. 10">
 
-  <label for="bidDate">Auction Date:</label>
-  <input type="date" id="bidDate">
+    <label for="yield">Your bid yield (% per year):</label>
+    <input type="number" id="yield" placeholder="e.g. 12.5" step="0.01">
 
-  <button class="btn" onclick="calculateAuction()">Calculate</button>
+    <label for="bidDate">Auction Date:</label>
+    <input type="date" id="bidDate">
 
-  <div id="result"></div>
-</div>
+    <button class="btn" onclick="calculateAuction()">Calculate</button>
 
-<script>
-function calculateAuction() {
-  const days = parseInt(document.getElementById("tbillType").value);
-  const qty = parseInt(document.getElementById("quantity").value);
-  const yieldRate = parseFloat(document.getElementById("yield").value);
-  const bidDateValue = document.getElementById("bidDate").value;
+    <div id="result"></div>
+  </div>
 
-  if (!days || !qty || !yieldRate || !bidDateValue) {
-    alert("Please fill in all fields correctly.");
-    return;
-  }
+  <!-- 🔹 Secondary Market Placeholder -->
+  <div class="section" id="secondary-section" style="display:none;">
+    <h2>Secondary Market</h2>
+    <p>💡 The secondary market calculator is coming soon. Stay tuned!</p>
+  </div>
 
-  const bidDate = new Date(bidDateValue);
-  const maturityDate = new Date(bidDate);
-  maturityDate.setDate(bidDate.getDate() + days);
+  <script>
+    function showPrimary() {
+      document.getElementById("primary-section").style.display = "block";
+      document.getElementById("secondary-section").style.display = "none";
+    }
 
-  const faceValuePerTBill = 5000;
-  const totalFaceValue = qty * faceValuePerTBill;
+    function showSecondary() {
+      document.getElementById("primary-section").style.display = "none";
+      document.getElementById("secondary-section").style.display = "block";
+    }
 
-  // Convert annual yield to discount price
-  const pricePerTBill = faceValuePerTBill / (1 + (yieldRate / 100) * (days / 365));
-  const totalPayment = pricePerTBill * qty;
+    function calculateAuction() {
+      const days = parseInt(document.getElementById("tbillType").value);
+      const qty = parseInt(document.getElementById("quantity").value);
+      const yieldRate = parseFloat(document.getElementById("yield").value);
+      const bidDateValue = document.getElementById("bidDate").value;
 
-  const discount = totalFaceValue - totalPayment;
+      if (!days || !qty || !yieldRate || !bidDateValue) {
+        alert("Please fill in all fields correctly.");
+        return;
+      }
 
-  // Fees
-  const fees = [
-    { company: "CBE CAPITAL", rate: 0.10 },
-    { company: "ECMA", rate: 0.005 },
-    { company: "ESX", rate: 0.021 },
-    { company: "CSD", rate: 0.00 }
-  ];
-  let totalFeeAmount = 0;
-  let feeRows = "";
-  fees.forEach(fee => {
-    const feeAmount = (totalPayment * fee.rate) / 100;
-    totalFeeAmount += feeAmount;
-    feeRows += `<tr><td>${fee.company}</td><td>${fee.rate.toFixed(3)}%</td><td>${feeAmount.toFixed(2)} ETB</td></tr>`;
-  });
+      const bidDate = new Date(bidDateValue);
+      const maturityDate = new Date(bidDate);
+      maturityDate.setDate(bidDate.getDate() + days);
 
-  const totalToSend = totalPayment + totalFeeAmount;
-  const netProfit = totalFaceValue - totalToSend;
+      const faceValuePerTBill = 5000;
+      const totalFaceValue = qty * faceValuePerTBill;
 
-  const resultHTML = `
-    <h3>Calculation Summary</h3>
-    <table>
-      <tr><th>Description</th><th>Amount / Value</th><th>Notes</th></tr>
-      <tr><td>T-Bill Type</td><td>${days} days</td><td>Selected maturity</td></tr>
-      <tr><td>Quantity</td><td>${qty}</td><td>Each = 5,000 ETB face value</td></tr>
-      <tr><td>Bid Yield</td><td>${yieldRate.toFixed(2)}%</td><td>Annualized</td></tr>
-      <tr><td>Total You Pay Today</td><td>${totalPayment.toFixed(2)} ETB</td><td>Before fees</td></tr>
-      <tr><td>Total Face Value</td><td>${totalFaceValue.toFixed(2)} ETB</td><td>At maturity</td></tr>
-      <tr><td>Gross Profit</td><td>${discount.toFixed(2)} ETB</td><td>Before fees</td></tr>
-      <tr><td>Maturity Date</td><td>${maturityDate.toDateString()}</td><td>Expected redemption</td></tr>
-    </table>
+      const pricePerTBill = faceValuePerTBill / (1 + (yieldRate / 100) * (days / 365));
+      const totalPayment = pricePerTBill * qty;
 
-    <h3>Transaction Fees</h3>
-    <table>
-      <tr><th>Company</th><th>Rate</th><th>Fee (ETB)</th></tr>
-      ${feeRows}
-      <tr><td><strong>Total Fees</strong></td><td colspan="2"><strong>${totalFeeAmount.toFixed(2)} ETB</strong></td></tr>
-      <tr><td><strong>Total to Send Broker</strong></td><td colspan="2"><strong>${totalToSend.toFixed(2)} ETB</strong></td></tr>
-    </table>
+      const discount = totalFaceValue - totalPayment;
 
-    <div class="result-summary">
-      <h3>Summary Explanation</h3>
-      <p>
-        You are bidding for <strong>${qty}</strong> T-Bill(s) of <strong>${days}-day</strong> maturity 
-        at an annual yield of <strong>${yieldRate.toFixed(2)}%</strong>.
-        Each T-Bill represents a face value of <strong>5,000 ETB</strong>, giving a total maturity value of 
-        <strong>${totalFaceValue.toLocaleString("en-US")} ETB</strong>.
-        <br><br>
-        With your bid yield, you will pay <strong>${totalPayment.toLocaleString("en-US")} ETB</strong> today 
-        (before fees). Including all transaction charges of <strong>${totalFeeAmount.toFixed(2)} ETB</strong>, 
-        you will send a total of <strong>${totalToSend.toLocaleString("en-US")} ETB</strong> to your broker.
-        <br><br>
-        On <strong>${maturityDate.toDateString()}</strong>, you will receive 
-        <strong>${totalFaceValue.toLocaleString("en-US")} ETB</strong> from the National Bank.
-        Your net profit after all fees will be approximately 
-        <strong>${netProfit.toLocaleString("en-US")} ETB</strong>.
-      </p>
-    </div>
-  `;
+      const fees = [
+        { company: "CBE CAPITAL", rate: 0.10 },
+      ];
+      let totalFeeAmount = 0;
+      let feeRows = "";
+      fees.forEach(fee => {
+        const feeAmount = (totalPayment * fee.rate) / 100;
+        totalFeeAmount += feeAmount;
+        feeRows += `<tr><td>${fee.company}</td><td>${fee.rate.toFixed(3)}%</td><td>${feeAmount.toFixed(2)} ETB</td></tr>`;
+      });
 
-  document.getElementById("result").innerHTML = resultHTML;
-}
-</script>
+      const totalToSend = totalPayment + totalFeeAmount;
+      const netProfit = totalFaceValue - totalToSend;
 
+      const resultHTML = `
+        <h3>Calculation Summary</h3>
+        <table>
+          <tr><th>Description</th><th>Amount / Value</th><th>Notes</th></tr>
+          <tr><td>T-Bill Type</td><td>${days} days</td><td>Selected maturity</td></tr>
+          <tr><td>Quantity</td><td>${qty}</td><td>Each = 5,000 ETB face value</td></tr>
+          <tr><td>Bid Yield</td><td>${yieldRate.toFixed(2)}%</td><td>Annualized</td></tr>
+          <tr><td>Total You Pay Today</td><td>${totalPayment.toFixed(2)} ETB</td><td>Before fees</td></tr>
+          <tr><td>Total Face Value</td><td>${totalFaceValue.toFixed(2)} ETB</td><td>At maturity</td></tr>
+          <tr><td>Gross Profit</td><td>${discount.toFixed(2)} ETB</td><td>Before fees</td></tr>
+          <tr><td>Maturity Date</td><td>${maturityDate.toDateString()}</td><td>Expected redemption</td></tr>
+        </table>
+
+        <h3>Transaction Fees</h3>
+        <table>
+          <tr><th>Company</th><th>Rate</th><th>Fee (ETB)</th></tr>
+          ${feeRows}
+          <tr><td><strong>Total Fees</strong></td><td colspan="2"><strong>${totalFeeAmount.toFixed(2)} ETB</strong></td></tr>
+          <tr><td><strong>Total to Send Broker</strong></td><td colspan="2"><strong>${totalToSend.toFixed(2)} ETB</strong></td></tr>
+        </table>
+
+        <div class="result-summary">
+          <h3>Summary Explanation</h3>
+          <p>
+            You are bidding for <strong>${qty}</strong> T-Bill(s) of <strong>${days}-day</strong> maturity 
+            at an annual yield of <strong>${yieldRate.toFixed(2)}%</strong>.
+            Each T-Bill represents a face value of <strong>5,000 ETB</strong>, giving a total maturity value of 
+            <strong>${totalFaceValue.toLocaleString("en-US")} ETB</strong>.
+            <br><br>
+            With your bid yield, you will pay <strong>${totalPayment.toLocaleString("en-US")} ETB</strong> today 
+            (before fees). Including all transaction charges of <strong>${totalFeeAmount.toFixed(2)} ETB</strong>, 
+            you will send a total of <strong>${totalToSend.toLocaleString("en-US")} ETB</strong> to your broker.
+            <br><br>
+            On <strong>${maturityDate.toDateString()}</strong>, you will receive 
+            <strong>${totalFaceValue.toLocaleString("en-US")} ETB</strong> from the National Bank.
+            Your net profit after all fees will be approximately 
+            <strong>${netProfit.toLocaleString("en-US")} ETB</strong>.
+          </p>
+        </div>
+      `;
+
+      document.getElementById("result").innerHTML = resultHTML;
+    }
+  </script>
 </body>
 </html>

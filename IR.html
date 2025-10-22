@@ -124,21 +124,33 @@ function calculateInterest() {
   // Simple Interest: P × R × T
   const interest = principal * ratePerUnit * time;
   const total = principal + interest;
+  const tax = 0.10; 
+    const totalwith  = interest * tax ;
+        const Intrestwithtax  = interest - totalwith ;
+
+        const totalwithTAX  = total - totalwith ;
+
+
 
   const resultDiv = document.getElementById("interestResult");
   resultDiv.style.display = "block";
 
   resultDiv.innerHTML = `
     <h4>📊 Interest Calculation Result</h4>
-    <table class="result-table">
-      <tr><td>Principal</td><td>${principal.toLocaleString("en-US")} ETB</td></tr>
-      <tr><td>Rate</td><td>${annualRate}% per year</td></tr>
-      <tr><td>Time</td><td>${time} ${unit}</td></tr>
-      <tr><td><strong>Interest</strong></td><td><strong>${interest.toLocaleString("en-US")} ETB</strong></td></tr>
-      <tr><td><strong>Total Amount with TAX to be add here </strong></td><td><strong>${total.toLocaleString("en-US")} ETB</strong></td></tr>
-          <tr><td><strong>Total Amount</strong></td><td><strong>${total.toLocaleString("en-US")} ETB</strong></td></tr>
+<table class="result-table">
+  <tr><td>Principal</td><td>${principal.toLocaleString("en-US")} ETB</td></tr>
+  <tr><td>Rate</td><td>${annualRate}% per year</td></tr>
+  <tr><td>Time</td><td>${time} ${unit}</td></tr>
+  <tr><td><strong>Interest</strong></td><td><strong>${interest.toLocaleString("en-US")} ETB</strong></td></tr>
+  <tr><td><strong>Total Amount</strong></td><td><strong>${total.toLocaleString("en-US")} ETB</strong></td></tr>
+</table>
 
-      </table>
+<h4>💰 Interest After 10% Tax</h4>
+<table class="result-table">
+  <tr><td><strong>Interest After Tax </strong></td><td><strong>${Intrestwithtax.toLocaleString("en-US")} ETB</strong></td></tr>
+  <tr><td><strong>Total After Tax</strong></td><td><strong>${totalwithTAX.toLocaleString("en-US")} ETB</strong></td></tr>
+</table>
+
   `;
 }
 </script>

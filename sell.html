@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>T‑Bill Sell Side Tracker</title>
+  <link rel="stylesheet" href="equity.css">
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* Minimal styles to keep things readable */
+    .container { max-width: 980px; margin: 24px auto; padding:12px; }
+    label { display:block; margin-top:8px; }
+    input, select { padding:8px; width:220px; }
+    .row { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+    .result-card { margin-top:16px; padding:12px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,.05); background:#fff; }
+    .summary { font-weight:700; margin-top:8px; }
+    canvas { max-width:100%; height:360px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Sell-side — T‑Bill Value Tracker</h2>
+
+    <div id="sellSection">
+      <label for="quantity">How many T‑Bills did you buy?</label>
+      <input id="quantity" type="number" min="1" value="1">
+
+      <label for="maturity">Which T‑Bill (maturity)</label>
+      <select id="maturity">
+        <option value="28">28 days</option>
+        <option value="91">91 days</option>
+        <option value="182">182 days</option>
+        <option value="364">364 days</option>
+      </select>
+
+      <label for="yield">Yield when bought (% annualized)</label>
+      <input id="yield" type="text" placeholder="e.g. 15" oninput="formatNumberInput(this)">
+
+      <label for="purchaseDate">Please enter the exact day you bought the T‑bill</label>
+      <input id="purchaseDate" type="date">
+
+      <div class="row" style="margin-top:12px;">
+        <button onclick="computeTBill()">Calculate Current Value & Show Daily Chart</button>
+      </div>
+
+      <div id="sellResult" class="result-card" style="display:none;">
+        <div id="summaryText"></div>
+        <canvas id="tbillChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+<script>
+// Helper: format numeric inputs with commas for user convenience (keeps decimal part)
+function formatNumberInput(input) {
+  let value = input.value.replace(/,/g, '');
+  if (value === '') return;
+  if (!isNaN(value)) {
+    const parts = value.split('.');
+    parts[0] = Number(parts[0]).toLocaleString('en-US');
+    input.value = parts.join('.');
+  }
+}
+
+function parseNumberInput(el) {
+  if (!el) return NaN;
+  const raw = el.value.replace(/,/g, '');
+  return parseFloat(raw);
+}
+
+let activeChart = null;
+
+function computeTBill() {
+  const FACE = 5000; // constant face value per bill
+  const qty = Math.max(0, Math.floor(parseFloat(document.getElementById('quantity').value) || 0));
+  const maturityDays = parseInt(document.getElementById('maturity').value, 10);
+  const yieldPct = parseNumberInput(document.getElementById('yield'));
+  const purchaseDateStr = document.getElementById('purchaseDate').value;
+
+  // basic validation
+  if (!qty || qty <= 0) { alert('Please enter a valid quantity (>=1).'); return; }
+  if (isNaN(yieldPct)) { alert('Please enter a valid yield percent.'); return; }
+  if (!purchaseDateStr) { alert('Please enter the purchase date.'); return; }
+
+  const yieldDecimal = yieldPct / 100;
+  const purchaseDate = new Date(purchaseDateStr + 'T00:00:00');
+  const today = new Date();
+  // normalize to local midnight for day counting
+  const oneDayMs = 24 * 60 * 60 * 1000;
+
+  // Calculate purchase price per bill using annualized yield (present value approach):
+  // Price = Face / (1 + yield * (maturityDays / 365))
+  const discountFactor = 1 + yieldDecimal * (maturityDays / 365);
+  const purchasePricePer = FACE / discountFactor;
+  const totalInvestment = purchasePricePer * qty;
+
+  // days elapsed and clamp
+  const elapsedDaysRaw = Math.floor((today - purchaseDate) / oneDayMs);
+  const elapsedDays = Math.max(0, Math.min(elapsedDaysRaw, maturityDays));
+  const daysRemaining = Math.max(0, maturityDays - elapsedDays);
+
+  // value today (straight-line from purchasePrice -> FACE over maturityDays)
+  let perBillValueToday;
+  if (elapsedDays >= maturityDays) {
+    perBillValueToday = FACE; // matured
+  } else if (elapsedDays <= 0) {
+    // not reached first day yet, show initial purchase price
+    perBillValueToday = purchasePricePer;
+  } else {
+    perBillValueToday = purchasePricePer + (FACE - purchasePricePer) * (elapsedDays / maturityDays);
+  }
+  const totalValueToday = perBillValueToday * qty;
+
+  // Build daily arrays for chart: from day 1 (purchase day) to maturityDays (inclusive)
+  const labels = [];
+  const values = [];
+  const startDate = new Date(purchaseDate.getTime());
+  for (let d = 0; d <= maturityDays; d++) {
+    const curDate = new Date(startDate.getTime() + d * oneDayMs);
+    const yyyy = curDate.getFullYear();
+    const mm = String(curDate.getMonth() + 1).padStart(2, '0');
+    const dd = String(curDate.getDate()).padStart(2, '0');
+    labels.push(`${yyyy}-${mm}-${dd}`);
+
+    // per-bill value at day d
+    const perBillValue = purchasePricePer + (FACE - purchasePricePer) * (d / maturityDays);
+    values.push(perBillValue * qty);
+  }
+
+  // show results
+  const sellResult = document.getElementById('sellResult');
+  const summaryText = document.getElementById('summaryText');
+  summaryText.innerHTML = `\n    <div>Purchase price per bill: <strong>${purchasePricePer.toLocaleString('en-US')} ETB</strong></div>\n    <div>Total invested: <strong>${totalInvestment.toLocaleString('en-US')} ETB</strong></div>\n    <div>Days elapsed since purchase: <strong>${elapsedDays}</strong> of ${maturityDays} days</div>\n    <div class="summary">Your T‑bills today are worth <span style="font-size:1.05em">${totalValueToday.toLocaleString('en-US')} ETB</span></div>\n    <div>Days remaining until maturity: <strong>${daysRemaining}</strong></div>`;
+
+  sellResult.style.display = 'block';
+
+  // render bar chart using Chart.js
+  const ctx = document.getElementById('tbillChart').getContext('2d');
+  if (activeChart) { activeChart.destroy(); activeChart = null; }
+  activeChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Total portfolio value (ETB)',
+        data: values,
+        barPercentage: 0.9,
+        categoryPercentage: 0.9
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        x: { ticks: { maxRotation: 45, minRotation: 0 } },
+        y: { beginAtZero: false }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: function(context) { return context.parsed.y.toLocaleString('en-US') + ' ETB'; } } }
+      }
+    }
+  });
+}
+</script>
+</body>
+</html>

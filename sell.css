@@ -1,0 +1,127 @@
+/* ------------------------------- */
+/* 💰 T-Bill Sell Calculator Theme */
+/* ------------------------------- */
+
+/* Section container */
+#tBillSection {
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 30px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  color: #fff;
+  width: 650px;
+  max-width: 90%;
+  margin: 40px auto;
+  text-align: center;
+}
+
+/* Labels and Inputs */
+#tBillSection label {
+  font-weight: bold;
+  color: #ffffff;
+  display: block;
+  margin: 12px 0 6px;
+  text-align: left;
+}
+
+#tBillSection input,
+#tBillSection select {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #000;
+}
+
+/* Buttons */
+#tBillSection button {
+  background: #b4885b;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 16px;
+  font-weight: bold;
+  margin-top: 10px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+#tBillSection button:hover {
+  background: #f7cca2;
+}
+
+/* Result Table */
+#resultTable {
+  margin-top: 20px;
+  width: 100%;
+  border-collapse: collapse;
+  background: rgba(247, 238, 222, 0.9);
+  color: #130950;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+#resultTable th, 
+#resultTable td {
+  padding: 10px 15px;
+  border: 1px solid #fff;
+  font-size: 15px;
+}
+
+#resultTable th {
+  background: #b4885b;
+  color: white;
+}
+
+#resultTable tr:nth-child(even) {
+  background: #fad1a9;
+}
+
+/* Chart Area */
+#chartContainer {
+  margin-top: 25px;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 15px;
+  border-radius: 15px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.25);
+}
+
+/* Download Button */
+.download-btn {
+  margin-top: 20px;
+  background: #b4885b;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 20px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.download-btn:hover {
+  background: #f7cca2;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  #tBillSection {
+    padding: 20px;
+  }
+
+  #resultTable th,
+  #resultTable td {
+    font-size: 13px;
+    padding: 8px;
+  }
+
+  #chartContainer {
+    padding: 10px;
+  }
+}
