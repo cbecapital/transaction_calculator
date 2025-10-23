@@ -182,7 +182,7 @@ button:hover {
   background: #b4885b;
   color: #fff;
   border: none;
-  border-radius: 50%;
+  border-radius: 0%;
   font-size: 16px;
   font-weight: bold;
   cursor: pointer;

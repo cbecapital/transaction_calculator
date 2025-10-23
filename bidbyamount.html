@@ -4,40 +4,25 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>T-Bill Sell Side Tracker — Gradual Yield to Maturity</title>
-  <link rel="stylesheet" href="sell.css">
+  <link rel="stylesheet" href="treasury.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 
-  <style>
-    body { font-family: Arial, sans-serif; background:#f7f8fb; color:#111; padding:18px; }
-    .container { max-width:1100px; margin:0 auto; background:#fff; border-radius:8px; padding:18px; box-shadow:0 6px 22px rgba(0,0,0,0.06); }
-    h2 { margin-top:0; }
-    label { display:block; margin-top:10px; font-weight:600; }
-    input, select, button { padding:8px 10px; margin-top:6px; font-size:14px; }
-    .row { display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-top:12px; }
-    .result-card { margin-top:18px; padding:14px; border-radius:8px; background:#fff; border:1px solid #eee; }
-    .summary { font-weight:700; margin-top:8px; }
-    canvas { width:100% !important; height:380px !important; }
-    .table-wrap { max-height:380px; overflow:auto; margin-top:12px; border:1px solid #eee; border-radius:6px; }
-    table.result-table { width:100%; border-collapse:collapse; font-size:13px; }
-    table.result-table thead th { position: sticky; top:0; background:#fafafa; z-index:2; padding:8px; border-bottom:1px solid #e6e6e6; text-align:left; }
-    table.result-table td { padding:8px; border-bottom:1px solid #f0f0f0; }
-    .controls { display:flex; gap:8px; align-items:center; margin-top:12px; }
-    .btn { background:#0b74ff; color:#fff; border:none; padding:8px 12px; border-radius:6px; cursor:pointer; }
-    .btn.secondary { background:#6c757d; }
-  </style>
+ 
 </head>
 <body>
-  
+  <video autoplay muted loop id="bg-video">
+  <source src="cbe-logo-2.mp4" type="video/mp4">
+</video>
 
   <button class="home-btn" onclick="location.href='index.html'">Home</button>
-<button class="btn" onclick="location.href='treasury.html'"> Back</button> 
+<button class="back-btn" onclick="location.href='treasury.html'"> Back</button> 
 
   <div class="container">
     <h2>T-Bill Buy / Bid Calculator</h2>
 
     <label for="investment">Investment Amount (ETB)</label>
-    <input id="investment" type="text" placeholder="e.g. 1,000,000" oninput="formatNumberInput(this)">
+    <input id="investment" type="text" placeholder="e.g. 1,000,000ETB" oninput="formatNumberInput(this)">
 
     <label for="maturity">Select T-Bill Tenor</label>
     <select id="maturity">
@@ -118,7 +103,7 @@ function calculateBid() {
 
   // Discounted purchase price per bill
   const discountFactor = 1 + yieldDecimal * (maturityDays / 365);
-  const pricePerBill = FACE / discountFactor;
+  const pricePerBill = FACE / discountFactor ;
 
   // Number of T-bills that can be purchased
   const numBills = Math.floor(investment / pricePerBill);
@@ -161,23 +146,36 @@ function calculateBid() {
   // Value today
   const todayValue = pricePerBill + (FACE - pricePerBill) * (elapsedDays / maturityDays);
   const todayTotal = todayValue * numBills + commission;
-  const totalValue = todayValue * numBills 
+  const totalValue = pricePerBill * numBills 
 
   // Summary
   document.getElementById('summaryText').innerHTML = `
-    <table class="result-table">
-      <tr><td>Investment Entered</td><td>${formatETB(investment)} ETB</td></tr>
-      <tr><td>Purchase Price per Bill</td><td>${formatETB(pricePerBill)} ETB</td></tr>
-      <tr><td>Purchase Price </td><td>${formatETB(totalValue)} ETB</td></tr>
+   <!-- 🟦 Table 1: Main Investment Details -->
+<table class="result-table">
+  <tr><td>Investment Entered</td><td>${formatETB(investment)} ETB</td></tr>
+  <tr><td>Discounted Price per Bill at given yield amount</td><td>${formatETB(pricePerBill)} ETB</td></tr>
+  <tr><td>Number of Bills Purchased you can buy</td><td>${numBills}</td></tr>
+  <tr><td>Total Discounted Price (price per bill x Qty)</td><td>${formatETB(totalValue)} ETB</td></tr>
+  <tr><td>Total Face Value</td><td>${formatETB(totalFaceValue)} ETB</td></tr>
+</table>
 
-      <tr><td>Number of Bills Purchased</td><td>${numBills}</td></tr>
-      <tr><td>Total Face Value</td><td>${formatETB(totalFaceValue)} ETB</td></tr>
-      <tr><td>Commission (0.1%)</td><td>${formatETB(commission)} ETB</td></tr>
-      <tr><td>Net Remaining After Fee</td><td>${formatETB(netAfterFee)} ETB</td></tr>
-      <tr><td>Profit at Maturity</td><td>${formatETB(profitAtMaturity)} ETB</td></tr>
-      <tr><td>Extra Needed for One More Bill</td><td>${formatETB(remainingForNext)} ETB</td></tr>
-      <tr><td><strong>Your T-bills worth today + fee</strong></td><td><strong>${formatETB(todayTotal)} ETB</strong></td></tr>
-    </table>
+<!-- 🟩 Table 2: Commission Details -->
+<table class="result-table">
+  <tr><td>Commission (0.1%)</td><td>${formatETB(commission)} ETB</td></tr>
+</table>
+
+<!-- 🟧 Table 3: Net Results -->
+<table class="result-table">
+  <tr><td>Net Remaining After Fee</td><td>${formatETB(netAfterFee)} ETB</td></tr>
+  <tr><td>Profit at Maturity</td><td>${formatETB(profitAtMaturity)} ETB</td></tr>
+</table>
+
+<!-- 🟥 Table 4: Additional Info -->
+<table class="result-table">
+  <tr><td>Extra Needed for One More Bill</td><td>${formatETB(remainingForNext)} ETB</td></tr>
+  <tr><td><strong>Your T-bills worth today + fee</strong></td><td><strong>${formatETB(todayTotal)} ETB</strong></td></tr>
+</table>
+
   `;
   document.getElementById('result').style.display = 'block';
 

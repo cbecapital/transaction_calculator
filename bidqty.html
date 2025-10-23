@@ -2,88 +2,27 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Treasury Bill Auction Calculator</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <style>
-    body {
-      font-family: "Poppins", sans-serif;
-      background: #f5f7fb;
-      padding: 30px;
-      color: #222;
-    }
-    h1 { text-align: center; color: #004aad; }
-    .btn {
-      background: #004aad;
-      color: #fff;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: 0.3s;
-      margin-top: 10px;
-    }
-    .btn:hover { background: #0066d9; }
-    .section {
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-      max-width: 800px;
-      margin: 20px auto;
-    }
-    label { display: block; margin-top: 10px; font-weight: 600; }
-    input, select {
-      width: 100%;
-      padding: 8px;
-      margin-top: 5px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 15px;
-      font-size: 14px;
-    }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 8px;
-      text-align: left;
-    }
-    th { background: #f0f0f0; }
-    .result-summary {
-      background: #f9f9f9;
-      padding: 15px;
-      margin-top: 20px;
-      border-left: 4px solid #004aad;
-      border-radius: 6px;
-      line-height: 1.6;
-    }
-    .market-buttons {
-      display: flex;
-      justify-content: center;
-      gap: 15px;
-      margin-bottom: 20px;
-    }
-    .chart-container {
-      position: relative;
-      height: 350px;
-      width: 100%;
-      margin-top: 25px;
-    }
-  </style>
-</head>
-<body>
-  <button class="home-btn" onclick="location.href='index.html'">Home</button>
-<button class="btn" onclick="location.href='treasury.html'"> Back</button> 
 
+  <link rel="stylesheet" href="treasury.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+
+<body>
+  <video autoplay muted loop id="bg-video">
+    <source src="cbe-logo-2.mp4" type="video/mp4">
+  </video>
+
+  <button class="home-btn" onclick="location.href='index.html'">Home</button>
+  <button class="back-btn" onclick="location.href='treasury.html'">Back</button>
+
+
+  <div class="container" id="primary-section">
+      <div class="section" id="primary-section">
   <h1>🇪🇹 Treasury Bill Auction Calculator</h1>
 
-  <div class="market-buttons">
-    <button class="btn" onclick="showPrimary()">Primary Market</button>
-  </div>
-
-  <div class="section" id="primary-section">
     <h2>Primary Market (Auction Bidding)</h2>
     <p>Estimate how much you must pay today when bidding for Treasury Bills in the National Bank auction.</p>
 
@@ -109,17 +48,15 @@
     <div id="result"></div>
 
     <!-- Chart + Table -->
-    <div class="chart-container">
-      <canvas id="tBillChart"></canvas>
-    </div>
+    <div class="chart-box">
+  <canvas id="tBillChart"></canvas>
+</div>
+
 
     <div id="daily-table-container"></div>
   </div>
 
-  <div class="section" id="secondary-section" style="display:none;">
-    <h2>Secondary Market</h2>
-    <p>💡 The secondary market calculator is coming soon. Stay tuned!</p>
-  </div>
+  
 
   <script>
     function showPrimary() {
@@ -162,23 +99,27 @@
       const netProfit = totalFaceValue - totalToSend;
 
       // --- result summary ---
-      const resultHTML = `
-        <h3>Calculation Summary</h3>
-        <table>
-          <tr><th>Description</th><th>Amount / Value</th><th>Notes</th></tr>
-          <tr><td>T-Bill Type</td><td>${days} days</td><td>Selected maturity</td></tr>
-          <tr><td>Quantity</td><td>${qty}</td><td>Each = 5,000 ETB face value</td></tr>
-          <tr><td>Bid Yield</td><td>${yieldRate.toFixed(2)}%</td><td>Annualized</td></tr>
-          <tr><td>Total You Pay Today</td><td>${totalPayment.toFixed(2)} ETB</td><td>Before fees</td></tr>
-          <tr><td>Total Face Value</td><td>${totalFaceValue.toFixed(2)} ETB</td><td>At maturity</td></tr>
-          <tr><td>Gross Profit</td><td>${discount.toFixed(2)} ETB</td><td>Before fees</td></tr>
-          <tr><td>Maturity Date</td><td>${maturityDate.toDateString()}</td><td>Expected redemption</td></tr>
-          <tr><td>CBE Capital Fee (0.1%)</td><td>${totalFeeAmount.toFixed(2)} ETB</td><td>Commission</td></tr>
-          <tr><td><strong>Total to Send</strong></td><td><strong>${totalToSend.toFixed(2)} ETB</strong></td><td>Including fees</td></tr>
-          <tr><td><strong>Net Profit</strong></td><td><strong>${netProfit.toFixed(2)} ETB</strong></td><td>After fees</td></tr>
-        </table>
-      `;
-      document.getElementById("result").innerHTML = resultHTML;
+    // --- result summary ---
+const resultHTML = `
+  <h3>Calculation Summary</h3>
+  <table class="result-table">
+    <tr><th>Description</th><th>Amount / Value</th><th>Notes</th></tr>
+    <tr><td>T-Bill Type</td><td>${days} days</td><td>Selected maturity</td></tr>
+    <tr><td>Quantity</td><td>${qty}</td><td>Each = 5,000 ETB face value</td></tr>
+    <tr><td>Bid Yield</td><td>${yieldRate.toFixed(2)}%</td><td>Annualized</td></tr>
+    <tr><td>Total You Pay Today</td><td>${totalPayment.toFixed(2)} ETB</td><td>Before fees</td></tr>
+    <tr><td>Total Face Value</td><td>${totalFaceValue.toFixed(2)} ETB</td><td>At maturity</td></tr>
+    <tr><td>Gross Profit</td><td>${discount.toFixed(2)} ETB</td><td>Before fees</td></tr>
+    <tr><td>Maturity Date</td><td>${maturityDate.toDateString()}</td><td>Expected redemption</td></tr>
+    <tr><td>CBE Capital Fee (0.1%)</td><td>${totalFeeAmount.toFixed(2)} ETB</td><td>Commission</td></tr>
+    <tr><td><strong>Total to Send</strong></td><td><strong>${totalToSend.toFixed(2)} ETB</strong></td><td>Including fees</td></tr>
+    <tr><td><strong>Net Profit</strong></td><td><strong>${netProfit.toFixed(2)} ETB</strong></td><td>After fees</td></tr>
+  </table>
+`;
+
+document.getElementById("result").innerHTML = resultHTML;
+document.getElementById("result").style.display = "block";
+
 
       // --- chart + table data ---
       const labels = [];
@@ -221,7 +162,7 @@
               label: "Total Value (ETB)",
               data: values,
               borderColor: "#004aad",
-              backgroundColor: "rgba(0,74,173,0.1)",
+              backgroundColor: "rgba(0,74,173,0.2)",
               tension: 0.3,
               fill: true,
               yAxisID: "y",
@@ -236,23 +177,106 @@
           ]
         },
         options: {
+          responsive: true,
+          maintainAspectRatio: false,
           scales: {
-            y: { title: { display: true, text: "Value (ETB)" }, beginAtZero: false },
-            y1: { position: "right", title: { display: true, text: "Yield (%)" }, beginAtZero: true }
+            x: {
+              title: {
+                display: true,
+                text: "Days to Maturity",
+                color: "#fff",
+                font: { weight: "bold", size: 14 }
+              },
+              ticks: {
+                color: "#fff",
+                font: { weight: "bold", size: 12 }
+              },
+              grid: { color: "rgba(255,255,255,0.15)" }
+            },
+            y: {
+              title: { 
+                display: true, 
+                text: "Value (ETB)",
+                color: "#fff",
+                font: { weight: "bold", size: 14 }
+              },
+              ticks: {
+                color: "#fff",
+                font: { weight: "bold", size: 12 }
+              },
+              beginAtZero: false,
+              grid: { color: "rgba(255,255,255,0.15)" }
+            },
+            y1: {
+              position: "right",
+              title: { 
+                display: true, 
+                text: "Yield (%)",
+                color: "#fff",
+                font: { weight: "bold", size: 14 }
+              },
+              ticks: {
+                color: "#fff",
+                font: { weight: "bold", size: 12 }
+              },
+              beginAtZero: true,
+              grid: { drawOnChartArea: false }
+            }
           },
-          plugins: { legend: { position: "top" } }
+          plugins: {
+            legend: {
+              position: "top",
+              labels: { 
+                color: "#fff",
+                font: { weight: "bold", size: 13 }
+              }
+            },
+            tooltip: {
+              titleFont: { weight: "bold", size: 13 },
+              bodyFont: { size: 12 }
+            }
+          }
         }
-      });
+      }); // ✅ ← closes the Chart() properly!
 
       // --- Daily Table ---
       document.getElementById("daily-table-container").innerHTML = `
         <h3>📊 Daily Breakdown</h3>
-        <table>
-          <tr><th>Day</th><th>Date</th><th>Total Value (ETB)</th><th>Yield Remaining (%)</th></tr>
+        <table class="result-table">
+          <tr>
+            <th>Day</th>
+            <th>Date</th>
+            <th>Total Value (ETB)</th>
+            <th>Yield Remaining (%)</th>
+          </tr>
           ${tableRows.join("")}
         </table>
       `;
+
+      // ✅ Show both chart + table
+      document.getElementById("result").style.display = "block";
+      document.getElementById("daily-table-container").style.display = "block";
+
+      // --- Daily Table --- ✅ now visible + styled
+      document.getElementById("daily-table-container").innerHTML = `
+        <h3>📊 Daily Breakdown</h3>
+        <table class="result-table">
+          <tr>
+            <th>Day</th>
+            <th>Date</th>
+            <th>Total Value (ETB)</th>
+            <th>Yield Remaining (%)</th>
+          </tr>
+          ${tableRows.join("")}
+        </table>
+      `;
+
+      // show both chart + table after calculation
+      document.getElementById("result").style.display = "block";
+      document.getElementById("daily-table-container").style.display = "block";
+
     }
+    
   </script>
 </body>
 </html>
