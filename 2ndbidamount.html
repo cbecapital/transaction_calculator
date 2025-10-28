@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>T-Bill Buy / Bid Calculator — Realistic Yield & Fees</title>
+  <link rel="stylesheet" href="treasury.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+</head>
+
+<body>
+  <video autoplay muted loop id="bg-video">
+    <source src="cbe-logo-2.mp4" type="video/mp4">
+  </video>
+
+  <button class="home-btn" onclick="location.href='index.html'">Home</button>
+  <button class="back-btn" onclick="location.href='treasury.html'">Back</button>
+
+  <div class="container">
+    <h2>T-Bill Buy / Bid Calculator</h2>
+
+    <label for="investment">Investment Amount (ETB)</label>
+    <input id="investment" type="text" placeholder="e.g. 1,000,000 ETB" oninput="formatNumberInput(this)">
+
+    <label for="maturity">Select T-Bill Tenor</label>
+    <select id="maturity">
+      <option value="28">28 Days</option>
+      <option value="91">91 Days</option>
+      <option value="182">182 Days</option>
+      <option value="364">364 Days</option>
+    </select>
+
+    <label for="yield">Expected Yield (% annualized)</label>
+    <input id="yield" type="text" placeholder="e.g. 12.5" oninput="formatNumberInput(this)">
+
+    <label for="purchaseDate">Purchase Date</label>
+    <input id="purchaseDate" type="date">
+
+    <button class="btn" onclick="calculateBid()">Calculate Bid</button>
+    <button class="btn secondary" id="downloadBtn" onclick="downloadExcel()" style="display:none;">Download Excel (.xlsx)</button>
+
+    <div id="result" style="display:none;">
+      <h3>📈 Summary</h3>
+      <div id="summaryText"></div>
+      <canvas id="bidChart"></canvas>
+
+      <h3>Daily Breakdown</h3>
+      <div class="table-wrap">
+        <table class="result-table" id="dailyTable">
+          <thead>
+            <tr>
+              <th>Day</th>
+              <th>Date</th>
+              <th>Total Value (ETB)</th>
+              <th>Yield Remaining (%)</th>
+            </tr>
+          </thead>
+          <tbody id="dailyTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+<script>
+function formatNumberInput(input) {
+  let value = input.value.replace(/,/g, '');
+  if (value === '') return;
+  if (!isNaN(value)) {
+    const parts = value.split('.');
+    parts[0] = Number(parts[0]).toLocaleString('en-US');
+    input.value = parts.join('.');
+  }
+}
+function parseNumberInput(id) {
+  const val = document.getElementById(id).value.replace(/,/g, '');
+  return parseFloat(val);
+}
+function formatETB(n) {
+  if (isNaN(n)) return '-';
+  return Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+let activeChart = null;
+let lastGeneratedSheetData = null;
+
+function calculateBid() {
+  const FACE = 5000;
+  const investment = parseNumberInput('investment');
+  const yieldPct = parseNumberInput('yield');
+  const maturityDays = parseInt(document.getElementById('maturity').value);
+  const purchaseDateStr = document.getElementById('purchaseDate').value;
+
+  if (isNaN(investment) || investment <= 0) return alert('Please enter a valid investment amount.');
+  if (isNaN(yieldPct) || yieldPct <= 0) return alert('Please enter a valid yield.');
+  if (!purchaseDateStr) return alert('Please select a purchase date.');
+
+  const purchaseDate = new Date(purchaseDateStr + 'T00:00:00');
+  const oneDayMs = 86400000;
+  const yieldDecimal = yieldPct / 100;
+
+  // --- Discounted purchase price per bill ---
+  const discountFactor = 1 + yieldDecimal * (maturityDays / 365);
+  const pricePerBill = FACE / discountFactor;
+
+/// --- Use high-precision math for large investments ---
+
+
+// Convert to BigInt for safe division
+const investmentBig = BigInt(Math.round(investment));
+const pricePerBillBig = BigInt(Math.round(pricePerBill));
+
+// Number of bills you can actually buy
+const numBillsBig = investmentBig / pricePerBillBig;
+
+// Convert back to Number safely for further calculations
+const numBills = Number(numBillsBig);
+const usedInvestment = Number(numBills * pricePerBill);
+const totalFaceValue = Number(numBills * FACE);
+
+// --- Commission fee 0.1% ---
+const commission = usedInvestment * 0.001;
+const totalPaid = usedInvestment + commission;
+const remainingBalance = investment - totalPaid;
+const profitAtMaturity = totalFaceValue - usedInvestment - commission;
+
+  // --- Realistic daily yield calculation (based on remaining days) ---
+  const labels = [];
+  const values = [];
+  const yields = [];
+  const tableRows = [];
+
+  for (let d = 0; d <= maturityDays; d++) {
+    const curDate = new Date(purchaseDate.getTime() + d * oneDayMs);
+    const dateStr = curDate.toISOString().slice(0,10);
+
+    // value progression
+    const perBillValue = pricePerBill + (FACE - pricePerBill) * (d / maturityDays);
+    const totalValue = perBillValue * numBills;
+    const remainingDays = maturityDays - d;
+
+    // Correct yield formula: ((Face - Price) / Price) * (365 / RemainingDays) * 100
+    let yieldRemaining = 0;
+    if (remainingDays > 0) {
+      yieldRemaining = ((FACE - perBillValue) / perBillValue) * (365 / remainingDays) * 100;
+    }
+
+    labels.push(dateStr);
+    values.push(totalValue);
+    yields.push(yieldRemaining);
+    tableRows.push({ day: d, date: dateStr, totalValue, yieldRem: yieldRemaining });
+  }
+
+  // --- Summary Tables ---
+  const totalFutureValue = totalFaceValue;
+  const totalCombined = remainingBalance + totalFutureValue;
+
+  document.getElementById('summaryText').innerHTML = `
+  <table class="result-table">
+    <tr><td>Investment Entered</td><td>${formatETB(investment)} ETB</td></tr>
+    <tr><td>Number of Bills you can Purchased at given amount </td><td>${numBills}</td></tr>
+    <tr><td>Discounted Price per Bill</td><td>${formatETB(pricePerBill)} ETB</td></tr>
+    <tr><td><strong>Face Value </strong></td><td><strong>${formatETB(totalFutureValue)} ETB</strong></td></tr>
+</table >
+  <table class="result-table">
+
+    <tr><td>Commission Fee (0.1%)</td><td>${formatETB(commission)} ETB</td></tr>
+    <tr><td><strong>Total Payment (Cost + Fee)</strong></td><td><strong>${formatETB(totalPaid)} ETB</strong></td></tr>
+    <tr><td>Remaining Balance in Account</td><td>${formatETB(remainingBalance)} ETB</td></tr>
+</table>
+  <table class="result-table">
+    <tr><td><strong>SO Total what you have to Payment  is (Cost + Fee)</strong></td><td><strong>${formatETB(totalPaid)} ETB</strong></td></tr>
+    <tr><td><strong>with that you proift will be Profit at Maturity</strong></td><td><strong>${formatETB(profitAtMaturity)} ETB</strong></td></tr>
+    <tr><td><strong>then what you will get </strong></td><td><strong>${formatETB(totalFutureValue)} ETB</strong></td></tr>
+</table>
+<div></div>  
+<table class="result-table">
+          <h3>IF you dont take out the remaining amount </h3>
+
+    <tr><td>At muaturity you will have (Balance + Maturity Value)</td><td>${formatETB(totalCombined)} ETB</td></tr>
+  </table>
+  `;
+
+  document.getElementById('result').style.display = 'block';
+
+  // --- Daily Breakdown Table ---
+  const tbody = document.getElementById('dailyTableBody');
+  tbody.innerHTML = '';
+  tableRows.forEach(r => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${r.day}</td>
+      <td>${r.date}</td>
+      <td>${formatETB(r.totalValue)}</td>
+      <td>${r.yieldRem.toFixed(2)}%</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  // --- Excel Data ---
+  lastGeneratedSheetData = {
+    headers: ['Day', 'Date', 'Total Value (ETB)', 'Yield Remaining (%)'],
+    rows: tableRows.map(r => [r.day, r.date, r.totalValue, r.yieldRem])
+  };
+  document.getElementById('downloadBtn').style.display = 'inline-block';
+
+  // --- Chart ---
+  const ctx = document.getElementById('bidChart').getContext('2d');
+  if (activeChart) activeChart.destroy();
+  activeChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [
+        { label: 'Total Value (ETB)', data: values, backgroundColor: '#b4885b' },
+        { label: 'Yield Remaining (%)', data: yields, type: 'line', borderColor: '#fff', yAxisID: 'y1' }
+      ]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        x: { ticks: { maxRotation: 45, minRotation: 0 } },
+        y: { beginAtZero: false, title: { display: true, text: 'ETB' } },
+        y1: { position: 'right', beginAtZero: true, title: { display: true, text: 'Yield (%)' } }
+      },
+      plugins: { legend: { display: true } }
+    }
+  });
+ 
+}
+
+function downloadExcel() {
+  if (!lastGeneratedSheetData) return alert('Please calculate first.');
+  const wb = XLSX.utils.book_new();
+  const wsData = [lastGeneratedSheetData.headers, ...lastGeneratedSheetData.rows];
+  const ws = XLSX.utils.aoa_to_sheet(wsData);
+  XLSX.utils.book_append_sheet(wb, ws, 'Buy_TBill');
+  const filename = `TBill_Buy_${new Date().toISOString().slice(0,10)}.xlsx`;
+  XLSX.writeFile(wb, filename);
+}
+</script>
+</body>
+</html>

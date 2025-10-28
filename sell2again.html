@@ -4,35 +4,20 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>T-Bill Sell Side Tracker — Gradual Yield to Maturity</title>
-  <link rel="stylesheet" href="sell.css">
+  
+  <!-- ✅ Use treasury.css for consistent design -->
+  <link rel="stylesheet" href="treasury.css">
+
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
-
-  <style>
-    body { font-family: Arial, sans-serif; background:#f7f8fb; color:#111; padding:18px; }
-    .container { max-width:1100px; margin:0 auto; background:#fff; border-radius:8px; padding:18px; box-shadow:0 6px 22px rgba(0,0,0,0.06); }
-    h2 { margin-top:0; }
-    label { display:block; margin-top:10px; font-weight:600; }
-    input, select, button { padding:8px 10px; margin-top:6px; font-size:14px; }
-    .row { display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-top:12px; }
-    .result-card { margin-top:18px; padding:14px; border-radius:8px; background:#fff; border:1px solid #eee; }
-    .summary { font-weight:700; margin-top:8px; }
-    canvas { width:100% !important; height:380px !important; }
-    .table-wrap { max-height:380px; overflow:auto; margin-top:12px; border:1px solid #eee; border-radius:6px; }
-    table.result-table { width:100%; border-collapse:collapse; font-size:13px; }
-    table.result-table thead th { position: sticky; top:0; background:#fafafa; z-index:2; padding:8px; border-bottom:1px solid #e6e6e6; text-align:left; }
-    table.result-table td { padding:8px; border-bottom:1px solid #f0f0f0; }
-    .controls { display:flex; gap:8px; align-items:center; margin-top:12px; }
-    .btn { background:#0b74ff; color:#fff; border:none; padding:8px 12px; border-radius:6px; cursor:pointer; }
-    .btn.secondary { background:#6c757d; }
-  </style>
 </head>
-  <button class="home-btn" onclick="location.href='index.html'">Home</button>
-<button class="btn" onclick="location.href='treasury.html'"> Back</button> 
 
 <body>
+  <button class="home-btn" onclick="location.href='index.html'">Home</button>
+  <button class="back-btn" onclick="location.href='treasury.html'">Back</button>
+
   <div class="container">
-    <h2>Sell-Side T-Bill Tracker — Gradual Yield Decline</h2>
+    <h2>Sell-Side T-Bill Tracker — Realistic Yield Decline</h2>
 
     <label for="quantity">How many T-Bills did you buy?</label>
     <input id="quantity" type="number" min="1" value="1">
@@ -117,36 +102,35 @@ function computeTBill() {
   const today = new Date();
   const oneDayMs = 24 * 60 * 60 * 1000;
 
-  // Compute purchase price per bill (discounted)
+  // --- Purchase price (discounted)
   const discountFactor = 1 + yieldDecimal * (maturityDays / 365);
   const purchasePricePer = FACE / discountFactor;
   const totalInvestment = purchasePricePer * qty;
 
-  const elapsedDaysRaw = Math.floor((today - purchaseDate) / oneDayMs);
-  const elapsedDays = Math.max(0, Math.min(elapsedDaysRaw, maturityDays));
+  const elapsedDays = Math.max(0, Math.min(Math.floor((today - purchaseDate) / oneDayMs), maturityDays));
   const daysRemaining = Math.max(0, maturityDays - elapsedDays);
 
-  // Linear daily value growth and gradual yield decay
   const labels = [];
   const values = [];
   const tableRows = [];
   const startDate = new Date(purchaseDate.getTime());
 
+  // --- Use real yield formula ---
   for (let d = 0; d <= maturityDays; d++) {
     const curDate = new Date(startDate.getTime() + d * oneDayMs);
-    const yyyy = curDate.getFullYear();
-    const mm = String(curDate.getMonth() + 1).padStart(2, '0');
-    const dd = String(curDate.getDate()).padStart(2, '0');
-    const dateStr = `${yyyy}-${mm}-${dd}`;
+    const dateStr = curDate.toISOString().slice(0, 10);
 
-    // Daily price (linear rise)
     const perBillValue = purchasePricePer + (FACE - purchasePricePer) * (d / maturityDays);
     const totalForQty = perBillValue * qty;
     const pctOfFace = (perBillValue / FACE) * 100;
 
-    // Gradual yield decline (starts at original yield, ends at 0)
     const remainingDays = maturityDays - d;
-    const yieldRemaining = yieldPct * (remainingDays / maturityDays);
+    let yieldToMaturity = 0;
+    if (remainingDays > 0) {
+      yieldToMaturity = ((FACE - perBillValue) / perBillValue) * (365 / remainingDays) * 100;
+    } else {
+      yieldToMaturity = 0;
+    }
 
     labels.push(dateStr);
     values.push(totalForQty);
@@ -154,17 +138,15 @@ function computeTBill() {
     tableRows.push({
       day: d,
       date: dateStr,
-      totalValue: Number(totalForQty.toFixed(2)),
-      pct: Number(pctOfFace.toFixed(4)),
-      ytm: Number(yieldRemaining.toFixed(4))
+      totalValue: totalForQty.toFixed(2),
+      pct: pctOfFace.toFixed(4),
+      ytm: yieldToMaturity.toFixed(4)
     });
   }
 
-  // Current day value
+  // --- Summary section ---
   const perBillValueToday = purchasePricePer + (FACE - purchasePricePer) * (elapsedDays / maturityDays);
   const totalValueToday = perBillValueToday * qty;
-
-  // Summary display
   const summaryText = document.getElementById('summaryText');
   summaryText.innerHTML = `
     <div>Purchase price per bill: <strong>${formatETB(purchasePricePer)} ETB</strong></div>
@@ -175,7 +157,7 @@ function computeTBill() {
   `;
   document.getElementById('sellResult').style.display = 'block';
 
-  // Fill table
+  // --- Table update ---
   const tbody = document.getElementById('dailyTableBody');
   tbody.innerHTML = '';
   tableRows.forEach(r => {
@@ -184,49 +166,19 @@ function computeTBill() {
       <td>${r.day}</td>
       <td>${r.date}</td>
       <td>${formatETB(r.totalValue)}</td>
-      <td>${r.pct.toFixed(4)}%</td>
-      <td>${r.ytm.toFixed(4)}%</td>
+      <td>${r.pct}%</td>
+      <td>${r.ytm}%</td>
     `;
     tbody.appendChild(tr);
   });
 
-  // Save for Excel export
+  // --- Save for Excel ---
   lastGeneratedSheetData = {
     headers: ['Day','Date','Total Value (ETB)','% of Face Value','Yield to Maturity (%)'],
     rows: tableRows.map(r => [r.day, r.date, r.totalValue, r.pct, r.ytm])
   };
   document.getElementById('downloadBtn').style.display = 'inline-block';
 
-  // Chart
-  const ctx = document.getElementById('tbillChart').getContext('2d');
-  if (activeChart) activeChart.destroy();
-  activeChart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: labels,
-      datasets: [{
-        label: 'Total portfolio value (ETB)',
-        data: values,
-        backgroundColor: '#0b74ff'
-      }]
-    },
-    options: {
-      responsive: true,
-      scales: {
-        x: { ticks: { maxRotation: 45 }, title: { display: true, text: 'Date' } },
-        y: { beginAtZero: false, title: { display: true, text: 'ETB' } }
-      },
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            title: (ctx) => `Day ${tableRows[ctx[0].dataIndex].day} — ${tableRows[ctx[0].dataIndex].date}`,
-            label: (ctx) => `${formatETB(ctx.parsed.y)} ETB`
-          }
-        }
-      }
-    }
-  });
 }
 
 function downloadExcel() {
@@ -236,7 +188,7 @@ function downloadExcel() {
   const ws = XLSX.utils.aoa_to_sheet(wsData);
   ws['!cols'] = [{wpx:60},{wpx:100},{wpx:140},{wpx:120},{wpx:140}];
   XLSX.utils.book_append_sheet(wb, ws, 'DailyValues');
-  const filename = `tbill_daily_values_${new Date().toISOString().slice(0,10)}.xlsx`;
+  const filename = `tbill_sell_side_${new Date().toISOString().slice(0,10)}.xlsx`;
   XLSX.writeFile(wb, filename);
 }
 </script>
