@@ -103,38 +103,59 @@ function calculateBid() {
     return alert('Please select a purchase date.');
 
   const purchaseDate = new Date(purchaseDateStr + 'T00:00:00');
+  const oneDayMs = 86400000;
 
-  // ✅ Discounted price per T-Bill (based on yield)
+  // ✅ Correct discounted price (based on yield)
   const pricePerTBill = faceValuePerTBill / (1 + (yieldRate / 100) * (days / 365));
 
-  // ✅ Include commission per T-Bill (0.1%)
+  // ✅ Commission per bill (0.1%)
   const commissionPerTBill = pricePerTBill * 0.001;
-
-  // ✅ Total cost per T-Bill (price + commission)
   const totalCostPerTBill = pricePerTBill + commissionPerTBill;
 
-  // ✅ Number of T-Bills you can afford including commission
+  // ✅ Number of bills (considering commission)
   const numTBill = Math.floor(investment / totalCostPerTBill);
 
-  // 💰 Total purchase & commission
+  // 💰 Totals
   const totalPurchaseValue = numTBill * pricePerTBill;
   const commission = numTBill * commissionPerTBill;
-
-  // 💸 Total Payment (price + fee)
   const totalPayment = totalPurchaseValue + commission;
-
-  // 💵 Remaining Balance
   const remainingBalance = investment - totalPayment;
 
-  // 🧭 Face Value and Profit
   const totalFaceValue = numTBill * faceValuePerTBill;
   const profitAtMaturity = totalFaceValue - totalPayment;
 
-  // 🗓️ Maturity Date
-  const maturityDate = new Date(purchaseDate.getTime() + days * 86400000);
+  // 🗓️ Maturity
+  const maturityDate = new Date(purchaseDate.getTime() + days * oneDayMs);
   const maturityDateStr = maturityDate.toISOString().slice(0, 10);
 
-  // 📊 Display Results
+  // --- 📈 Realistic daily yield calculation ---
+  const labels = [];
+  const values = [];
+  const yields = [];
+  const tableRows = [];
+
+  for (let d = 0; d <= days; d++) {
+    const curDate = new Date(purchaseDate.getTime() + d * oneDayMs);
+    const dateStr = curDate.toISOString().slice(0, 10);
+
+    // Linear daily growth from purchase price → face value
+    const perBillValue = pricePerTBill + (faceValuePerTBill - pricePerTBill) * (d / days);
+    const totalValue = perBillValue * numTBill;
+    const remainingDays = days - d;
+
+    // Dynamic yield remaining
+    let yieldRemaining = 0;
+    if (remainingDays > 0) {
+      yieldRemaining = ((faceValuePerTBill - perBillValue) / perBillValue) * (365 / remainingDays) * 100;
+    }
+
+    labels.push(dateStr);
+    values.push(totalValue);
+    yields.push(yieldRemaining);
+    tableRows.push({ day: d, date: dateStr, totalValue, yieldRem: yieldRemaining });
+  }
+
+  // --- 🧮 Output Summary ---
   document.getElementById('summaryText').innerHTML = `
   <table class="result-table">
     <tr><td>Investment Entered</td><td>${formatETB(investment)} ETB</td></tr>
@@ -161,14 +182,44 @@ function calculateBid() {
   `;
 
   document.getElementById('result').style.display = 'block';
+
+  // --- 🧾 Daily Table ---
+  const tbody = document.getElementById('dailyTableBody');
+  tbody.innerHTML = '';
+  tableRows.forEach(r => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${r.day}</td>
+      <td>${r.date}</td>
+      <td>${formatETB(r.totalValue)}</td>
+      <td>${r.yieldRem.toFixed(2)}%</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  // --- 📊 Chart ---
+  const ctx = document.getElementById('bidChart').getContext('2d');
+  if (activeChart) activeChart.destroy();
+  activeChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [
+        { label: 'Total Value (ETB)', data: values, backgroundColor: '#b4885b' },
+        { label: 'Yield Remaining (%)', data: yields, type: 'line', borderColor: '#ffffff', yAxisID: 'y1' }
+      ]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        x: { ticks: { maxRotation: 45, minRotation: 0 } },
+        y: { beginAtZero: false, title: { display: true, text: 'ETB' } },
+        y1: { position: 'right', beginAtZero: true, title: { display: true, text: 'Yield (%)' } }
+      },
+      plugins: { legend: { display: true } }
+    }
+  });
 }
-
-
-
-
-
-
-
 
 
 function downloadExcel() {

@@ -1,95 +1,114 @@
-/* Body - center container vertically and horizontally */
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #f5f5f5;
-  display: flex;
-  justify-content: center;  /* horizontal center */
-  align-items: center;      /* vertical center */
-  height: 100vh;            /* full viewport height */
-  text-align: center;
-}
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
 
-/* Video background full screen */
+/* 🎥 Fullscreen Video Background */
 #bg-video {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;   
-  z-index: -1; /* keeps video behind content */
+  object-fit: cover;
+  z-index: -1;
 }
 
-/* Container for the buttons and heading */
+/* 🌐 Base Layout */
+body {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  background: transparent; /* no flat background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  text-align: center;
+  color: #050505; /* deep warm black for clarity */
+}
+
+/* 🪟 Frosted Glass Container */
 .container {
   position: relative;
   z-index: 1;
-  background: rgba(2, 0, 0, 0.2); 
-  backdrop-filter: blur(10px);
-  padding: 30px;
-  border-radius: 15px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  background: rgba(255, 255, 255, 0.10);
+  backdrop-filter: blur(15px);
+  border-radius: 20px;
+  padding: 40px 35px;
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* 3 columns */
-  grid-gap: 15px; /* spacing between buttons */
+  grid-template-columns: repeat(3, 1fr);
+  grid-gap: 20px;
   max-width: 900px;
-  color: #fff;
-  text-align: center;
+  box-shadow: 0 10px 35px rgba(245, 149, 39, 0.35);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-/* Heading spans all columns */
+.container:hover {
+  transform: scale(1.015);
+  box-shadow: 0 12px 45px rgba(0, 0, 0, 0.35);
+}
+
+/* 🏷️ Heading */
 h1 {
-  grid-column: 1 / -1; /* heading spans all 3 columns */
+  grid-column: 1 / -1;
   margin-bottom: 20px;
-  color: #ffffff;
+  color: #000000;
+  font-weight: 600;
+  text-transform: uppercase;
+  background: rgba(250, 250, 252, 0.37);
+  padding: 14px;
+  border-radius: 12px;
+  letter-spacing: 0.5px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
 }
 
-/* Buttons style */
-/* Buttons style - bronze/golden theme */
+/* 💛 Buttons — Gold/Navy Theme */
 .btn {
   padding: 15px;
   font-size: 16px;
-  font-weight: bold;
+  font-weight: 600;
   border: none;
   border-radius: 12px;
   cursor: pointer;
-  background: linear-gradient(145deg, #b4885b, #d4a373); /* bronze-gold gradient */
+  background: linear-gradient(145deg, #b4885b, #d4a373);
   color: #fff;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
 }
 
 .btn:hover {
-  background: linear-gradient(145deg, #e7cdb3, #b4885b); /* inverse gradient on hover */
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+  background: linear-gradient(145deg, #e3b787, #b4885b);
+  color: #ebe7e4;
 }
 
-
-
-
-
-
-
-
-@media (max-width: 600px) {
-  .calendar {
-    grid-template-columns: repeat(2, 1fr); /* fewer columns on tiny screens */
-  }
-
-  .button-row {
-    flex-direction: column;
-    gap: 10px;
-  }
-
+/* 📱 Responsive Layout */
+@media (max-width: 768px) {
   .container {
-    width: 95%;
+    grid-template-columns: repeat(2, 1fr);
+    padding: 25px;
+    width: 90%;
+  }
+
+  h1 {
+    font-size: 1.3rem;
+  }
+
+  .btn {
+    font-size: 15px;
+    padding: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    grid-template-columns: 1fr;
     padding: 20px;
   }
 
-  .ticker {
-    font-size: 12px;
+  h1 {
+    font-size: 1.1rem;
+  }
+
+  .btn {
+    font-size: 14px;
   }
 }
-
