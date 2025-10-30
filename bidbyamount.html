@@ -158,26 +158,38 @@ function calculateBid() {
   // --- 🧮 Output Summary ---
   document.getElementById('summaryText').innerHTML = `
   <table class="result-table">
+        <tr><td>Issue Date (Days)</td><td>${days}</td></tr> 
+    <tr><td>Maturity Date</td><td>${maturityDateStr}</td></tr>
     <tr><td>Investment Entered</td><td>${formatETB(investment)} ETB</td></tr>
     <tr><td>Yield</td><td>${yieldRate}%</td></tr>
-    <tr><td>Maturity (Days)</td><td>${days}</td></tr>
-    <tr><td>Price per T-Bill (Discounted)</td><td><strong>${formatETB(pricePerTBill)} ETB</strong></td></tr>
+   
+
+    </table>
+
+  <table class="result-table">
+    <tr><td>Qty of T-Bills you can Purchase</td><td>${numTBill}</td></tr>
+    <tr><td>Discounted Price per T-Bill (Face value= 5,000.00)</td><td><strong>${formatETB(pricePerTBill)} ETB</strong></td></tr>
+    <tr><td>Total Discounted amount (QTY x price per bill)  </td><td>${formatETB(totalPurchaseValue)} ETB</td></tr>
+
+    </table>
+<h1> Commission </h1>
+    <table class="result-table">
+
     <tr><td>Commission per T-Bill (0.1%)</td><td><strong>${formatETB(commissionPerTBill)} ETB</strong></td></tr>
     <tr><td>Total Cost per T-Bill (Incl. Fee)</td><td><strong>${formatETB(totalCostPerTBill)} ETB</strong></td></tr>
-    <tr><td>Number of T-Bills Purchased</td><td>${numTBill}</td></tr>
-  </table>
-
-  <table class="result-table">
-    <tr><td>Total Purchase Value</td><td>${formatETB(totalPurchaseValue)} ETB</td></tr>
     <tr><td>Total Commission Fee</td><td>${formatETB(commission)} ETB</td></tr>
-    <tr><td><strong>Total Payment (Cost + Fee)</strong></td><td><strong>${formatETB(totalPayment)} ETB</strong></td></tr>
-    <tr><td>Remaining Balance</td><td>${formatETB(remainingBalance)} ETB</td></tr>
-  </table>
+    <table>
+<h1></h1>
+    <table class="result-table">
 
-  <table class="result-table">
+    <tr><td><strong>Total Payment (Cost + Fee)</strong></td><td><strong>${formatETB(totalPayment)} ETB</strong></td></tr>
     <tr><td>Face Value at Maturity</td><td>${formatETB(totalFaceValue)} ETB</td></tr>
     <tr><td><strong>Profit at Maturity</strong></td><td><strong>${formatETB(profitAtMaturity)} ETB</strong></td></tr>
-    <tr><td>Maturity Date</td><td>${maturityDateStr}</td></tr>
+    </table>
+<h2></h2>
+
+  <table class="result-table">
+    <tr><td>Remaining Balance</td><td>${formatETB(remainingBalance)} ETB</td></tr>
   </table>
   `;
 
