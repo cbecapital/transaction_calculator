@@ -42,25 +42,30 @@
 
     <div id="result" style="display:none;">
       <h3>📈 Summary</h3>
+      
       <div id="summaryText"></div>
       <canvas id="bidChart"></canvas>
 
-      <h3>Daily Breakdown</h3>
-      <div class="table-wrap">
-        <table class="result-table" id="dailyTable">
-          <thead>
-            <tr>
-              <th>Day</th>
-              <th>Date</th>
-              <th>Total Value (ETB)</th>
-              <th>Yield Remaining (%)</th>
-            </tr>
-          </thead>
-          <tbody id="dailyTableBody"></tbody>
-        </table>
-      </div>
-    </div>
+     <h3>📅 Daily Breakdown</h3>
+
+<div class="result-container scrollable-table">
+  <div class="table-wrap">
+    <table class="result-table" id="dailyTable">
+      <thead>
+        <tr>
+          <th>Day</th>
+          <th>Date</th>
+          <th>Total Value (ETB)</th>
+          <th>Yield Remaining (%)</th>
+        </tr>
+      </thead>
+      <tbody id="dailyTableBody"></tbody>
+    </table>
   </div>
+</div>
+
+
+
 
 <script>
 function formatNumberInput(input) {
@@ -120,6 +125,8 @@ function calculateBid() {
   const commission = numTBill * commissionPerTBill;
   const totalPayment = totalPurchaseValue + commission;
   const remainingBalance = investment - totalPayment;
+      const foronemore = totalCostPerTBill - remainingBalance;
+
 
   const totalFaceValue = numTBill * faceValuePerTBill;
   const profitAtMaturity = totalFaceValue - totalPayment;
@@ -142,6 +149,7 @@ function calculateBid() {
     const perBillValue = pricePerTBill + (faceValuePerTBill - pricePerTBill) * (d / days);
     const totalValue = perBillValue * numTBill;
     const remainingDays = days - d;
+
 
     // Dynamic yield remaining
     let yieldRemaining = 0;
@@ -190,7 +198,8 @@ function calculateBid() {
 
   <table class="result-table">
     <tr><td>Remaining Balance</td><td>${formatETB(remainingBalance)} ETB</td></tr>
-  </table>
+       <tr><td>for one more tbills you will need to add </td><td>${formatETB(foronemore)} ETB</td></tr>
+    </table>
   `;
 
   document.getElementById('result').style.display = 'block';
@@ -217,8 +226,8 @@ function calculateBid() {
     data: {
       labels: labels,
       datasets: [
-        { label: 'Total Value (ETB)', data: values, backgroundColor: '#b4885b' },
-        { label: 'Yield Remaining (%)', data: yields, type: 'line', borderColor: '#ffffff', yAxisID: 'y1' }
+        { label: 'Total Value (ETB)', data: values, backgroundColor: '#f5f0e8' },
+        { label: 'Yield Remaining (%)', data: yields, type: 'line', borderColor: '#04185c', yAxisID: 'y1' }
       ]
     },
     options: {

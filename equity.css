@@ -108,14 +108,14 @@ select, input {
   border: 1px solid rgba(255,255,255,0.25); 
   font-size: 15px; 
   background: rgba(255,255,255,0.18);
-  color: #fff;
+  color: #04185c;
   outline: none;
   transition: all 0.3s ease;
 }
 
 select:focus, input:focus {
   border-color: #e9c89f;
-  background: rgba(255,255,255,0.3);
+  background: #f5f0e8;
 }
 
 /* 💛 Buttons */
