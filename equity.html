@@ -59,9 +59,33 @@ function formatNumberInput(input) {
 <input type="text" id="buyQuantity" placeholder="e.g. 100" 
        oninput="formatNumberInput(this)">
 
-    <label for="buyMarketPrice"> Price (per share):</label>
-<input type="text" id="buyMarketPrice" placeholder="e.g. 120.50" 
-       oninput="formatNumberInput(this)">
+    <label for="buyMarketPrice">Price (per share):</label>
+<input type="text" id="buyMarketPrice" placeholder="e.g. 120.50"
+       oninput="forceTwoDecimals(this)">
+
+<script>
+function forceTwoDecimals(input) {
+  let val = input.value;
+
+  // Allow only numbers and decimal
+  val = val.replace(/[^0-9.]/g, "");
+
+  // If more than one ".", keep only the first one
+  const parts = val.split(".");
+  if (parts.length > 2) {
+    val = parts[0] + "." + parts[1];
+  }
+
+  // Force max 2 decimals
+  if (parts[1] && parts[1].length > 2) {
+    val = parts[0] + "." + parts[1].substring(0, 2);
+  }
+
+  input.value = val;
+}
+</script>
+
+       
 
     <button onclick="calculateFee('buy')">Calculate Buy</button>
     <div id="buyResult"></div>
@@ -76,6 +100,28 @@ function formatNumberInput(input) {
   <input type="text" id="sharePrice" placeholder="e.g. 1200" 
          oninput="formatNumberInput(this)">
 
+<script>
+function formatNumberInput(input) {
+  let val = input.value;
+
+  // Allow only numbers and decimal
+  val = val.replace(/[^0-9.]/g, "");
+
+  // If more than one ".", keep only the first one
+  const parts = val.split(".");
+  if (parts.length > 2) {
+    val = parts[0] + "." + parts[1];
+  }
+
+  // Force max 2 decimals
+  if (parts[1] && parts[1].length > 2) {
+    val = parts[0] + "." + parts[1].substring(0, 2);
+  }
+
+  input.value = val;
+}
+</script>
+
   <button onclick="calculateShares()">Calculate Share amount</button>
   <div id="investmentResult"></div>
 </div>
@@ -89,7 +135,7 @@ function formatNumberInput(input) {
 <input type="text" id="sellQuantity" placeholder="e.g. 100" 
        oninput="formatNumberInput(this)">
 
-    <label for="sellMarketPrice">Enter Market / Limit Price (per share):</label>
+    <label for="sellMarketPrice">Enter Price (per share):</label>
 <input type="text" id="sellMarketPrice" placeholder="e.g. 120.50" 
        oninput="formatNumberInput(this)">
        
@@ -149,7 +195,6 @@ if (type === "buy") {
 
   
   resultDiv.innerHTML = `
-    <h4>${type === "buy" ? "Buy" : "Sell"} Calculation Result</h4>
     <table class="result-table">
       
        <tbody>
@@ -163,7 +208,7 @@ if (type === "buy") {
 <table class="result-table">
   <thead>
     <tr>
-      <th>Company</th>
+      <th></th>
       <th>Commission </th>
       <th>Amount (ETB)</th>
     </tr>
@@ -183,7 +228,7 @@ if (type === "buy") {
 <table class="result-table">
   <thead>
     <tr>
-      <th>Company</th>
+      <th></th>
       <th> Fee</th>
       <th>Amount (ETB)</th>
     </tr>
@@ -312,7 +357,6 @@ function calculateShares() {
 
   // show detailed breakdown
   resultDiv.innerHTML = `
-  <h4>Investment Result (fees applied)</h4>
 
 <!-- Table 1: Input Summary -->
 <table class="result-table">
@@ -328,16 +372,19 @@ function calculateShares() {
 <table class="result-table">
   <thead>
     <tr>
-      <th>Company</th>
+      <th></th>
       <th> commision </th>
       <th>Amount (ETB)</th>
     </tr>
   </thead>
-  <tr> <td>CBE fee </td>  <td> (1.6%)</td><td>${fmt(feeCBEc)} ETB</td></tr>
+
+  <tr> <td>CBE fee </td>  <td> (1.6%)</td>
+    
+  <td>${fmt(feeCBEc)} ETB</td></tr>
   
   <thead>
     <tr>
-      <th>Company</th>
+      <th></th>
       <th> Fee</th>
       <th>Amount (ETB)</th>
     </tr>

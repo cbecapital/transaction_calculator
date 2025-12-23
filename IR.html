@@ -125,12 +125,17 @@ function calculateInterest() {
   const interest = principal * ratePerUnit * time;
   const total = principal + interest;
   const tax = 0.10; 
+    const timetax = 0.30; 
+
     const totalwith  = interest * tax ;
+        const totalwithtime  = interest * timetax ;
+
         const Intrestwithtax  = interest - totalwith ;
+        const Intrestwithtimetax  = interest - totalwithtime ;
 
         const totalwithTAX  = total - totalwith ;
 
-
+            const totalwithtimeTAX  = total - totalwithtime ;
 
   const resultDiv = document.getElementById("interestResult");
   resultDiv.style.display = "block";
@@ -149,6 +154,12 @@ function calculateInterest() {
 <table class="result-table">
   <tr><td><strong>Interest After Tax </strong></td><td><strong>${Intrestwithtax.toLocaleString("en-US")} ETB</strong></td></tr>
   <tr><td><strong>Total After Tax</strong></td><td><strong>${totalwithTAX.toLocaleString("en-US")} ETB</strong></td></tr>
+</table>
+
+<h4>💰 Interest After Time deposit  30% Tax</h4>
+<table class="result-table">
+  <tr><td><strong>Interest AfterTime deposit Tax </strong></td><td><strong>${Intrestwithtimetax.toLocaleString("en-US")} ETB</strong></td></tr>
+  <tr><td><strong>Total After Tax</strong></td><td><strong>${totalwithtimeTAX.toLocaleString("en-US")} ETB</strong></td></tr>
 </table>
 
   `;
