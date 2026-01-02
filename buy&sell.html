@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="UTF-8">
+    <title>Profit Calculator (2.11% Fee)</title>
+        <button class="home-btn" onclick="location.href='index.html'">Home</button>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            padding: 30px;
+        }
+        .container {
+            max-width: 500px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            text-align: center;
+        }
+        label {
+            display: block;
+            margin-top: 12px;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+        }
+        button {
+            margin-top: 15px;
+            width: 100%;
+            padding: 10px;
+            background: #007bff;
+            color: white;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            background: #eef2f5;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .profit {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Profit Calculator</h2>
+
+    <label>Quantity</label>
+    <input type="number" id="qty" step="any">
+
+    <label>Buy Price (per unit)</label>
+    <input type="number" id="buyPrice" step="any">
+
+    <label>Sell Price (per unit)</label>
+    <input type="number" id="sellPrice" step="any">
+
+    <button onclick="calculate()">Calculate</button>
+
+    <div class="result" id="result" style="display:none;"></div>
+</div>
+
+<script>
+function calculate() {
+    const feeRate = 0.0211;
+
+    const qty = parseFloat(document.getElementById("qty").value);
+    const buyPrice = parseFloat(document.getElementById("buyPrice").value);
+    const sellPrice = parseFloat(document.getElementById("sellPrice").value);
+
+    if (isNaN(qty) || isNaN(buyPrice) || isNaN(sellPrice)) {
+        alert("Please enter all values");
+        return;
+    }
+
+    // Buy calculations
+    const buyValue = qty * buyPrice;
+    const buyFee = buyValue * feeRate;
+    const totalBuyCost = buyValue + buyFee;
+
+    // Minimum sell price (break-even)
+    const minSellPrice = buyPrice * (1 + feeRate) / (1 - feeRate);
+
+    // Sell calculations
+    const sellValue = qty * sellPrice;
+    const sellFee = sellValue * feeRate;
+    const netSellAmount = sellValue - sellFee;
+
+    // Profit
+    const profit = netSellAmount - totalBuyCost;
+
+    document.getElementById("result").style.display = "block";
+    document.getElementById("result").innerHTML = `
+        <strong>Buy Value:</strong> ${buyValue.toFixed(2)}<br>
+        <strong>Buy Fee (2.11%):</strong> ${buyFee.toFixed(2)}<br>
+        <strong>Total Buy Cost:</strong> ${totalBuyCost.toFixed(2)}<br><br>
+
+        <strong>Minimum Sell Price (Break-even):</strong> ${minSellPrice.toFixed(4)}<br><br>
+
+        <strong>Sell Value:</strong> ${sellValue.toFixed(2)}<br>
+        <strong>Sell Fee (2.11%):</strong> ${sellFee.toFixed(2)}<br>
+        <strong>Net Sell Amount:</strong> ${netSellAmount.toFixed(2)}<br>
+
+        <div class="profit">
+            NET PROFIT / LOSS: ${profit.toFixed(2)}
+        </div>
+    `;
+}
+</script>
+
+</body>
+</html>

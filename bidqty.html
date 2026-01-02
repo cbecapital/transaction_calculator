@@ -8,7 +8,10 @@
   <link rel="stylesheet" href="treasury.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
-
+ <div class="button-row">
+    <button class="btn" onclick="showSection('buySection')">Buy</button>
+    <button class="btn" onclick="showSection('sellSection')">Sell</button>
+  </div>
 <script>
 function formatNumberInput(input) {
   let value = input.value.replace(/,/g, ""); // remove existing commas
